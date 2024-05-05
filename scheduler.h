@@ -14,10 +14,15 @@
 #include <scheduler.h>
 #include <time.h>
 #include <bits/types/struct_sched_param.h>
+#include "tasks/tasks.h"
 
-#define NUM_CORES 8
+#define NUM_CORES 4
 #define CORE_BASE 8
 #define NUM_TASKS 20
+
+
+#define RUNNING 1
+#define IDLE 0
 
 
 typedef struct {
@@ -31,6 +36,7 @@ void my_func2();
 void my_func3();
 void my_func4();
 void my_func5();
+void my_func6();
 void idle();
 
 

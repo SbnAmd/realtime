@@ -7,5 +7,19 @@ include_directories(.)
 
 add_executable(realtime
         scheduler.c
-        scheduler.h)
+        scheduler.h
+        tasks/tasks.h
+        tasks/tasks.c
+        tasks/bitarray.c
+        tasks/bitcnt_1.c
+        tasks/bitcnt_2.c
+        tasks/bitcnt_3.c
+        tasks/bitcnt_4.c
+        tasks/bitfiles.c
+        tasks/bitstrng.c
+        tasks/bstr_i.c
+        tasks/cubic.c
+        tasks/isqrt.c
+        tasks/rad2deg.c)
 add_link_options("-pthread")
+target_link_libraries(realtime PRIVATE m)

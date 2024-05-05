@@ -6,202 +6,239 @@
 #include <scheduler.h>
 
 
-int tasks[NUM_TASKS];
-int tasks_completed = 0;
-int results[NUM_TASKS];
-int thread_status[NUM_TASKS] = {0,0,0,0};
 
-static pthread_cond_t threadDied = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t task_var_mtx = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t tick_cond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t tick_mtx = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t manage_to_core_CVes[NUM_CORES] = {PTHREAD_COND_INITIALIZER};
+static pthread_cond_t core_to_manage_CVes[NUM_CORES] = {PTHREAD_COND_INITIALIZER};
+static pthread_mutex_t core_mutexes[NUM_CORES] = {PTHREAD_MUTEX_INITIALIZER};
+static int new_task_IDes[NUM_CORES] = {0};
+static int new_task_stat[NUM_CORES] = {0};
+static int core_status[NUM_CORES]={IDLE};
+static int core_IDes[NUM_CORES];
+static int stop_flag = 0;
+
+
+
+
 //static pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;
 
-void (*task_list[6])()={&my_func1, &my_func2, &my_func3, &my_func4, &my_func5, &idle};
+void (*task_list[7])()={&idle, &my_func1, &my_func2, &my_func3, &my_func4, &my_func5, &my_func6};
 
 int task_status=0;
 int new_task=0;
 int shared_task_index;
 
-void my_func1(){
+
+typedef void (*FunctionPtr)();
+
+
+void run_and_time_task(FunctionPtr task, char* task_name){
     long cnt;
     struct timespec start, end;
     long elapsed_ns;
 
     clock_gettime(CLOCK_MONOTONIC, &start);
-    printf("Task running part1\n");
+    printf("%s running\n", task_name);
 
-    for(long i = 0; i < 10000000000; i++)
-        cnt += 1;
+    task();
 
     clock_gettime(CLOCK_MONOTONIC, &end);
 
     elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
     double elapsed_ms = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
-    printf("Elapsed time by task1: %.2f milliseconds\n", elapsed_ms);
+    printf("Elapsed time by %s: %.2f milliseconds\n",task_name, elapsed_ms);
+}
+
+
+void my_func1(){
+    run_and_time_task(qsort_large, "Qsort-Large");
 }
 
 void my_func2(){
-    long cnt;
-    struct timespec start, end;
-    long elapsed_ns;
-
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    printf("Task running part2\n");
-
-    for(long i = 0; i < 11000000000; i++)
-        cnt += 1;
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-    double elapsed_ms = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
-    printf("Elapsed time by task2: %.2f milliseconds\n", elapsed_ms);
+    run_and_time_task(qsort_small, "Qsort-Small");
 }
+
 void my_func3(){
-    long cnt;
-    struct timespec start, end;
-    long elapsed_ns;
-
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    printf("Task running part3\n");
-
-    for(long i = 0; i < 6000000000; i++)
-        cnt += 1;
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-    double elapsed_ms = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
-    printf("Elapsed time by task3: %.2f milliseconds\n", elapsed_ms);
+    run_and_time_task(bitcnts_large, "Bitcounts-Large");
 }
+
 void my_func4(){
-    long cnt;
-    struct timespec start, end;
-    long elapsed_ns;
-
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    printf("Task running part4\n");
-
-    for(long i = 0; i < 5000000000; i++)
-        cnt += 1;
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-    double elapsed_ms = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
-    printf("Elapsed time by task4: %.2f milliseconds\n", elapsed_ms);
+    run_and_time_task(bitcnts_small, "Bitcounts-Small");
 }
+
 void my_func5(){
-    long cnt;
-    struct timespec start, end;
-    long elapsed_ns;
+    run_and_time_task(basicmath_large, "Basicmath-Large");
+}
 
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    printf("Task running part5\n");
-
-    for(long i = 0; i < 2000000000; i++)
-        cnt += 1;
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-    double elapsed_ms = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
-    printf("Elapsed time by task5: %.2f milliseconds\n", elapsed_ms);
+void my_func6(){
+    run_and_time_task(basicmath_small, "Basicmath-Small");
 }
 
 void idle(){
-    usleep(9999);
+    usleep(20000);
 }
 
 void* worker(void* arg) {
-    int ret, task_idx;
-//    my_func1();
-//    my_func2();
+    int task_idx;
+
+    int core_idx = (int)(*((int*)arg));
 
 
 
-    while (1){ // todo: change condition
+    if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
+        printf("Core %d locking failed\n", core_idx);
+    }
 
-        // Check and select task
-        ret = pthread_mutex_lock(&task_var_mtx);
-        if (ret != 0)
-            printf("Thread failed to select task\n");
+    core_status[core_idx] = IDLE;
+    while (new_task_stat[core_idx] == 0)
+        pthread_cond_wait(&manage_to_core_CVes[core_idx], &core_mutexes[core_idx]);
 
-        // Task selection
-        switch (shared_task_index) {
+    if(pthread_mutex_unlock(&core_mutexes[core_idx]) != 0){
+        printf("Core %d unlocking failed\n", core_idx);
+    }
 
-            case 0:
-                task_idx = 0;
-                break;
-            case 1:
-                task_idx = 1;
-                break;
-            case 2:
-                task_idx = 2;
-                break;
-            case 3:
-                task_idx = 3;
-                break;
-            case 4:
-                task_idx = 4;
-                break;
-            default:
-                task_idx = 5;
-                break;
 
+
+    while (stop_flag == 0){ // todo: change condition
+
+
+        if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
+            printf("Core %d locking failed\n", core_idx);
         }
 
-        new_task = 0;
-        task_status = 1;
-//        printf("Task idx : %d\n", task_idx);
-        ret = pthread_mutex_unlock(&task_var_mtx);
-        if (ret != 0)
-            printf("Task selection mtx unlock failed\n");
+        // Task selection
+        task_idx = new_task_IDes[core_idx];
+        new_task_stat[core_idx] = 0;
+        if(task_idx == 0){
+            core_status[core_idx] = IDLE;
+        } else{
+            core_status[core_idx] = RUNNING;
+        }
+
+        if(pthread_mutex_unlock(&core_mutexes[core_idx]) != 0){
+            printf("Core %d unlocking failed\n", core_idx);
+        }
 
         // Run task
         task_list[task_idx]();
 
+
+        if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
+            printf("Core %d locking failed\n", core_idx);
+        }
+        // Set to IDLE
+        core_status[core_idx] = IDLE;
+
+        if(pthread_mutex_unlock(&core_mutexes[core_idx]) != 0){
+            printf("Core %d unlocking failed\n", core_idx);
+        }
+
         // Notify task is done
-        ret = pthread_mutex_lock(&task_var_mtx);
-        if (ret != 0)
-            printf("Thread failed to select task\n");
-        task_status = 0;
-//        printf("Task status : %d\n", task_status);
-        ret = pthread_mutex_unlock(&task_var_mtx);
-        if (ret != 0)
-            printf("Task selection mtx unlock failed\n");
+        pthread_cond_signal(&core_to_manage_CVes[core_idx]);
 
 
         // Wait until tick and decide what to do
-        ret = pthread_mutex_lock(&task_var_mtx);
-        if (ret != 0)
-            printf("pthread_mutex_lock failed\n");
+        if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
+            printf("Core %d locking failed\n", core_idx);
+        }
 
-        while (new_task==0)
-            pthread_cond_wait(&threadDied, &task_var_mtx);
+        while (new_task_stat[core_idx] == 0)
+            pthread_cond_wait(&manage_to_core_CVes[core_idx], &core_mutexes[core_idx]);
 
-        ret = pthread_mutex_unlock(&task_var_mtx);
-        if (ret != 0)
-            printf("pthread_mutex_unlock failed\n");
+        if(pthread_mutex_unlock(&core_mutexes[core_idx]) != 0){
+            printf("Core %d unlocking failed\n", core_idx);
+        }
     }
 
     return NULL;
 }
 
+void* manager(void* arg){
+
+    int status[NUM_CORES];
+    int new_tasks[NUM_CORES];
+
+    while (stop_flag == 0){
+
+        for(int i = 0; i < NUM_CORES; i++){
+            if(pthread_mutex_lock(&core_mutexes[i]) != 0){
+                printf("Core %d locking failed\n", i);
+                i--;
+                continue;
+            }
+
+            status[i] = core_status[i];
+            if(pthread_mutex_unlock(&core_mutexes[i]) != 0){
+                printf("Core %d unlocking failed\n", i);
+            }
+
+            // todo: for test
+            new_tasks[i] = i%NUM_CORES + 1;
+        }
+
+        // todo: send status
+        // todo: wait until new schedule
+
+
+        for(int i = 0; i < NUM_CORES; i++){
+            if(status[i] == IDLE){
+                if(pthread_mutex_lock(&core_mutexes[i]) != 0){
+                    printf("Core %d locking failed\n", i);
+                    i--;
+                    continue;
+                }
+                new_task_IDes[i] = new_tasks[i];
+                new_task_stat[i] = 1;
+                printf("Task_ID[%d] = %d\n", i, new_tasks[i]);
+                pthread_cond_signal(&manage_to_core_CVes[i]);
+                if(pthread_mutex_unlock(&core_mutexes[i]) != 0){
+                    printf("Core %d unlocking failed\n", i);
+                }
+            }
+        }
+
+
+        if(pthread_mutex_lock(&tick_mtx) != 0){
+            printf("Tick locking failed\n");
+        }
+
+        pthread_cond_wait(&tick_cond, &tick_mtx);
+
+        if(pthread_mutex_unlock(&tick_mtx) != 0){
+            printf("Tick unlocking failed\n");
+        }
+
+    }
+
+}
+
+
+void* tick(void* arg){
+
+    while (stop_flag == 0){
+
+        usleep(20000);
+
+        pthread_cond_signal(&tick_cond);
+
+    }
+}
+
 
 void init_cores(){
     struct sched_param params;
-    pthread_attr_t attrs[NUM_CORES];
-    pthread_t threads[NUM_CORES];
-    int ret;
-    unsigned int cnt=0;
+    pthread_attr_t attrs[NUM_CORES], tick_attr, manager_attr;
+    pthread_t threads[NUM_CORES], tick_thread, manager_thread;
 
 
     // Init
     shared_task_index = 0;
     new_task = 1;
+    for(int i =0 ; i < NUM_CORES; i++)
+        core_IDes[i] = i;
 
-//    for(int i = 0; i < NUM_CORES; i++){
-    for(int i = 0; i < 1; i++){
+    for(int i = 0; i < NUM_CORES; i++){
         // Set real-time scheduling parameters
         params.sched_priority = sched_get_priority_max(SCHED_FIFO);
         pthread_attr_init(&attrs[i]);
@@ -209,45 +246,63 @@ void init_cores(){
         pthread_attr_setschedpolicy(&attrs[i], SCHED_FIFO);
         pthread_attr_setschedparam(&attrs[i], &params);
 
-        if (pthread_create(&threads[i], &attrs[i], worker, NULL) != 0){
+        if (pthread_create(&threads[i], &attrs[i], worker, &core_IDes[i]) != 0){
             printf("Thread creation failed\n");
         }
-
         cpu_set_t cpuset;
         CPU_ZERO(&cpuset);
         CPU_SET(i + CORE_BASE, &cpuset);
         pthread_setaffinity_np(threads[i], sizeof(cpu_set_t), &cpuset);
 
     }
+    // ************************************************************ //
+    params.sched_priority = sched_get_priority_max(SCHED_FIFO);
+    pthread_attr_init(&manager_attr);
+    pthread_attr_setinheritsched(&manager_attr, PTHREAD_EXPLICIT_SCHED);
+    pthread_attr_setschedpolicy(&manager_attr, SCHED_FIFO);
+    pthread_attr_setschedparam(&manager_attr, &params);
 
-    while (1){
-        cnt++;
-//        printf("Tick : %d\n", cnt);
-        usleep(10000);
-
-        ret = pthread_mutex_lock(&task_var_mtx);
-        if (ret != 0)
-            printf("Thread failed to select task\n");
-
-        if(task_status == 0){
-            shared_task_index = (int)cnt%6;
-            new_task = 1;
-//            printf("Shared task index : %d\n", shared_task_index);
-        }
-
-        pthread_cond_signal(&threadDied);
-
-        ret = pthread_mutex_unlock(&task_var_mtx);
-        if (ret != 0)
-            printf("Task selection mtx unlock failed\n");
-
+    if (pthread_create(&manager_thread, &manager_attr, manager, NULL) != 0){
+        printf("Manager thread failed\n");
     }
+
+    cpu_set_t manager_cpuset;
+    CPU_ZERO(&manager_cpuset);
+    CPU_SET(15, &manager_cpuset);
+    pthread_setaffinity_np(manager_thread, sizeof(cpu_set_t), &manager_cpuset);
+
+    // ************************************************************ //
+    params.sched_priority = sched_get_priority_max(SCHED_FIFO);
+    pthread_attr_init(&tick_attr);
+    pthread_attr_setinheritsched(&tick_attr, PTHREAD_EXPLICIT_SCHED);
+    pthread_attr_setschedpolicy(&tick_attr, SCHED_FIFO);
+    pthread_attr_setschedparam(&tick_attr, &params);
+
+    if (pthread_create(&tick_thread, &tick_attr, tick, NULL) != 0){
+        printf("Tick thread failed\n");
+    }
+
+    cpu_set_t tick_cpuset;
+    CPU_ZERO(&tick_cpuset);
+    CPU_SET(14, &tick_cpuset);
+    pthread_setaffinity_np(tick_thread, sizeof(cpu_set_t), &tick_cpuset);
+
+    // ************************************************************ //
+
+    usleep(20000000);
+    stop_flag = 1;
 
 
     for(int i = 0; i < NUM_CORES; i++){
         pthread_join(threads[i], NULL);
         pthread_attr_destroy(&attrs[i]);
     }
+
+    pthread_join(manager_thread, NULL);
+    pthread_attr_destroy(&manager_attr);
+
+    pthread_join(tick_thread, NULL);
+    pthread_attr_destroy(&tick_attr);
 
 }
 
