@@ -306,9 +306,9 @@ void init_cores(){
 
 }
 
-int main(){
-
-    init_cores();
-
-    return 0;
-}
+//int main(){
+//
+//    init_cores();
+//
+//    return 0;
+//}

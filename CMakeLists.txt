@@ -20,6 +20,14 @@ add_executable(realtime
         tasks/bstr_i.c
         tasks/cubic.c
         tasks/isqrt.c
-        tasks/rad2deg.c)
+        tasks/rad2deg.c
+        server/server.h
+        server/server.c
+        performance_counter/performance_counter.h
+        performance_counter/performance_counter.c
+        power/power.h
+        power/power.c
+        temperature/tempertature.h
+        temperature/tempertature.c)
 add_link_options("-pthread")
-target_link_libraries(realtime PRIVATE m)
+target_link_libraries(realtime PRIVATE m sensors)
