@@ -11,7 +11,6 @@ void get_core_temperatures(float* core_temperatures) {
     char command[] = "sensors";
     char line[MAX_LINE_LENGTH];
     int core_id;
-//    float core_temperatures[CORES_NUM] = {0};
 
     // Open a pipe to the sensors command
     fp = popen(command, "r");

@@ -16,63 +16,56 @@ static int new_task_IDes[NUM_CORES] = {0};
 static int new_task_stat[NUM_CORES] = {0};
 static int core_status[NUM_CORES]={IDLE};
 static int core_IDes[NUM_CORES];
+static struct PerformanceEvents perf_event_array[NUM_CORES] = {0};
+static float temperatures[TOTAL_CORES] = {0};
+static double power;
+static unsigned long energy_uj;
 static int stop_flag = 0;
+static char g_buffer[2048] = {0};
 
 
 
 
 //static pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;
 
-void (*task_list[7])()={&idle, &my_func1, &my_func2, &my_func3, &my_func4, &my_func5, &my_func6};
-
-int task_status=0;
-int new_task=0;
-int shared_task_index;
+void (*task_list[7])(int)={&idle, &my_func1, &my_func2, &my_func3, &my_func4, &my_func5, &my_func6};
 
 
-typedef void (*FunctionPtr)();
 
-
-void run_and_time_task(FunctionPtr task, char* task_name){
-    long cnt;
-    struct timespec start, end;
-    long elapsed_ns;
-
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    printf("%s running\n", task_name);
-
-    task();
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-    double elapsed_ms = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
-    printf("Elapsed time by %s: %.2f milliseconds\n",task_name, elapsed_ms);
+void my_func1(int core_idx){
+    struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
+    strcpy(perf_event->name, "Qsort-Large");
+    run_task_and_get_perf_event(qsort_large, perf_event, core_idx);
 }
 
-
-void my_func1(){
-    run_and_time_task(qsort_large, "Qsort-Large");
+void my_func2(int core_idx){
+    struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
+    strcpy(perf_event->name, "Qsort-Small");
+    run_task_and_get_perf_event(qsort_large, perf_event, core_idx);
 }
 
-void my_func2(){
-    run_and_time_task(qsort_small, "Qsort-Small");
+void my_func3(int core_idx){
+    struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
+    strcpy(perf_event->name, "Bitcounts-Large");
+    run_task_and_get_perf_event(qsort_large, perf_event, core_idx);
 }
 
-void my_func3(){
-    run_and_time_task(bitcnts_large, "Bitcounts-Large");
+void my_func4(int core_idx){
+    struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
+    strcpy(perf_event->name, "Bitcounts-Small");
+    run_task_and_get_perf_event(qsort_large, perf_event, core_idx);
 }
 
-void my_func4(){
-    run_and_time_task(bitcnts_small, "Bitcounts-Small");
+void my_func5(int core_idx){
+    struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
+    strcpy(perf_event->name, "Basicmath-Large");
+    run_task_and_get_perf_event(qsort_large, perf_event, core_idx);
 }
 
-void my_func5(){
-    run_and_time_task(basicmath_large, "Basicmath-Large");
-}
-
-void my_func6(){
-    run_and_time_task(basicmath_small, "Basicmath-Small");
+void my_func6(int core_idx){
+    struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
+    strcpy(perf_event->name, "Basicmath-Small");
+    run_task_and_get_perf_event(qsort_large, perf_event, core_idx);
 }
 
 void idle(){
@@ -83,8 +76,6 @@ void* worker(void* arg) {
     int task_idx;
 
     int core_idx = (int)(*((int*)arg));
-
-
 
     if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
         printf("Core %d locking failed\n", core_idx);
@@ -98,10 +89,7 @@ void* worker(void* arg) {
         printf("Core %d unlocking failed\n", core_idx);
     }
 
-
-
-    while (stop_flag == 0){ // todo: change condition
-
+    while (stop_flag == 0){
 
         if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
             printf("Core %d locking failed\n", core_idx);
@@ -121,7 +109,7 @@ void* worker(void* arg) {
         }
 
         // Run task
-        task_list[task_idx]();
+        task_list[task_idx](core_idx);
 
 
         if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
@@ -134,6 +122,7 @@ void* worker(void* arg) {
             printf("Core %d unlocking failed\n", core_idx);
         }
 
+        // fixme
         // Notify task is done
         pthread_cond_signal(&core_to_manage_CVes[core_idx]);
 
@@ -167,15 +156,18 @@ void* manager(void* arg){
                 i--;
                 continue;
             }
-
+            // Copying core statuses
             status[i] = core_status[i];
             if(pthread_mutex_unlock(&core_mutexes[i]) != 0){
                 printf("Core %d unlocking failed\n", i);
             }
-
-            // todo: for test
-            new_tasks[i] = i%NUM_CORES + 1;
         }
+
+        get_core_temperatures(temperatures);
+        get_power_and_energy(&power, &energy_uj);
+
+        //serialize
+        serialize(perf_event_array, g_buffer, NUM_CORES, &power, &energy_uj, temperatures);
 
         // todo: send status
         // todo: wait until new schedule
@@ -233,8 +225,7 @@ void init_cores(){
 
 
     // Init
-    shared_task_index = 0;
-    new_task = 1;
+
     for(int i =0 ; i < NUM_CORES; i++)
         core_IDes[i] = i;
 
@@ -289,6 +280,8 @@ void init_cores(){
 
     // ************************************************************ //
 
+    // ************************************************************ //
+
     usleep(20000000);
     stop_flag = 1;
 
@@ -306,9 +299,9 @@ void init_cores(){
 
 }
 
-//int main(){
-//
-//    init_cores();
-//
-//    return 0;
-//}
+int main(){
+
+    printf("%lu", sizeof(perf_event_array ));
+
+    return 0;
+}

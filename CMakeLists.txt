@@ -28,6 +28,10 @@ add_executable(realtime
         power/power.h
         power/power.c
         temperature/tempertature.h
-        temperature/tempertature.c)
+        temperature/tempertature.c
+        realtime.h
+        serdes/serdes.c
+        serdes/serdes.h
+)
 add_link_options("-pthread")
 target_link_libraries(realtime PRIVATE m sensors)

@@ -24,6 +24,11 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     struct perf_event_attr cpu_cache_references_pe, cpu_branch_misses_pe, cpu_branch_instructions_pe;
     struct perf_event_attr cpu_page_faults_pe, cpu_context_switches_pe, cpu_migrations_pe;
 
+    struct timespec start, end;
+    long elapsed_ns;
+
+
+
     // CPU CYCLES
     memset(&cpu_cycles_pe, 0, sizeof(struct perf_event_attr));
     cpu_cycles_pe.type = PERF_TYPE_HARDWARE;
@@ -195,7 +200,9 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     ioctl(cpu_migrations_fd, PERF_EVENT_IOC_ENABLE, 0);
 
     // Run task
+    clock_gettime(CLOCK_MONOTONIC, &start);
     task();
+    clock_gettime(CLOCK_MONOTONIC, &end);
 
     // Disable events
     ioctl(cpu_cycles_fd, PERF_EVENT_IOC_DISABLE, 0);
@@ -217,6 +224,10 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     read(cpu_page_faults_fd, &perf_event->cpu_page_faults, sizeof(long long));
     read(cpu_context_switches_fd, &perf_event->cpu_context_switches, sizeof(long long));
     read(cpu_migrations_fd, &perf_event->cpu_migrations, sizeof(long long));
+
+    // Time calc
+    elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
+    perf_event->duration = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
 
     close(cpu_cycles_fd);
     close(cpu_instructions_fd);

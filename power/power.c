@@ -36,3 +36,19 @@ void get_energy_consumption(unsigned long* energy_uj){
     *energy_uj = get_cores_power();
 }
 
+void get_power_and_energy(double* power,unsigned long* energy_uj){
+
+    static unsigned long e1 =0 ;
+    static unsigned long e2 =0 ;
+
+    get_energy_consumption(&e2);
+    if(e1 == 0){
+        *energy_uj = e2;
+        *power = 1;
+    } else{
+        *power = (double )(e2-e1)/20000;
+        *energy_uj = e2;
+    }
+
+}
+

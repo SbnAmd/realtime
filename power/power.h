@@ -5,15 +5,8 @@
 #ifndef REALTIME_POWER_H
 #define REALTIME_POWER_H
 
-#define GNU_SOURCE
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <scheduler.h>
-#include <time.h>
-#include <bits/types/struct_sched_param.h>
+
+#include "realtime.h"
 #include "tasks/tasks.h"
 #define MAX_BUF_SIZE 256
 
@@ -22,6 +15,7 @@
 
 unsigned long get_cores_power();
 void get_energy_consumption(unsigned long* energy_uj);
+void get_power_and_energy(double* power,unsigned long* energy_uj);
 
 
 #endif //REALTIME_POWER_H
