@@ -13,6 +13,8 @@
 #include "power/power.h"
 #include "temperature/tempertature.h"
 #include "serdes/serdes.h"
+#include "server/server.h"
+
 
 
 

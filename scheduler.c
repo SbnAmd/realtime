@@ -8,7 +8,9 @@
 
 
 static pthread_cond_t tick_cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t server_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t tick_mtx = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t server_mtx = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t manage_to_core_CVes[NUM_CORES] = {PTHREAD_COND_INITIALIZER};
 static pthread_cond_t core_to_manage_CVes[NUM_CORES] = {PTHREAD_COND_INITIALIZER};
 static pthread_mutex_t core_mutexes[NUM_CORES] = {PTHREAD_MUTEX_INITIALIZER};
@@ -20,8 +22,8 @@ static struct PerformanceEvents perf_event_array[NUM_CORES] = {0};
 static float temperatures[TOTAL_CORES] = {0};
 static double power;
 static unsigned long energy_uj;
-static int stop_flag = 0;
-static char g_buffer[2048] = {0};
+int stop_flag = 0;
+char g_buffer[2048] = {0};
 
 
 
@@ -33,12 +35,18 @@ void (*task_list[7])(int)={&idle, &my_func1, &my_func2, &my_func3, &my_func4, &m
 
 
 void my_func1(int core_idx){
+#ifdef DEBUG
+    printf("Qsort-Large\n");
+#endif
     struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
     strcpy(perf_event->name, "Qsort-Large");
     run_task_and_get_perf_event(qsort_large, perf_event, core_idx);
 }
 
 void my_func2(int core_idx){
+#ifdef DEBUG
+    printf("Qsort-Small\n");
+#endif
     struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
     strcpy(perf_event->name, "Qsort-Small");
     run_task_and_get_perf_event(qsort_large, perf_event, core_idx);
@@ -135,9 +143,11 @@ void* worker(void* arg) {
         while (new_task_stat[core_idx] == 0)
             pthread_cond_wait(&manage_to_core_CVes[core_idx], &core_mutexes[core_idx]);
 
+
         if(pthread_mutex_unlock(&core_mutexes[core_idx]) != 0){
             printf("Core %d unlocking failed\n", core_idx);
         }
+
     }
 
     return NULL;
@@ -148,6 +158,13 @@ void* manager(void* arg){
     int status[NUM_CORES];
     int new_tasks[NUM_CORES];
 
+    if(pthread_mutex_lock(&server_mtx) != 0){
+        printf("Tick locking failed\n");
+    }
+    pthread_cond_wait(&server_cond, &server_mtx);
+    if(pthread_mutex_unlock(&server_mtx) != 0){
+        printf("Tick unlocking failed\n");
+    }
     while (stop_flag == 0){
 
         for(int i = 0; i < NUM_CORES; i++){
@@ -162,15 +179,44 @@ void* manager(void* arg){
                 printf("Core %d unlocking failed\n", i);
             }
         }
+#ifdef DEBUG
+        struct timespec start, end;
+        long elapsed_ns;
+#endif
 
+#ifdef DEBUG
+        clock_gettime(CLOCK_MONOTONIC, &start);
+#endif
         get_core_temperatures(temperatures);
+#ifdef DEBUG
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
+        printf("transfer time : %f\n",elapsed_ns / 1000000.0); // Elapsed time in milliseconds
+#endif
         get_power_and_energy(&power, &energy_uj);
 
         //serialize
         serialize(perf_event_array, g_buffer, NUM_CORES, &power, &energy_uj, temperatures);
 
         // todo: send status
+        pthread_cond_signal(&server_cond);
+
         // todo: wait until new schedule
+        if(pthread_mutex_lock(&server_mtx) != 0){
+            printf("Tick locking failed\n");
+        }
+        pthread_cond_wait(&server_cond, &server_mtx);
+        if(pthread_mutex_unlock(&server_mtx) != 0){
+            printf("Tick unlocking failed\n");
+        }
+
+        // Deserialize
+        // fixme: if there is more than 9 tasks, 2 digit ID
+        for(int j=0; j < NUM_CORES; j++){
+            char c = g_buffer[j];
+            new_tasks[j] = atoi(&c);
+        }
+
 
 
         for(int i = 0; i < NUM_CORES; i++){
@@ -182,7 +228,6 @@ void* manager(void* arg){
                 }
                 new_task_IDes[i] = new_tasks[i];
                 new_task_stat[i] = 1;
-                printf("Task_ID[%d] = %d\n", i, new_tasks[i]);
                 pthread_cond_signal(&manage_to_core_CVes[i]);
                 if(pthread_mutex_unlock(&core_mutexes[i]) != 0){
                     printf("Core %d unlocking failed\n", i);
@@ -279,6 +324,24 @@ void init_cores(){
     pthread_setaffinity_np(tick_thread, sizeof(cpu_set_t), &tick_cpuset);
 
     // ************************************************************ //
+    pthread_attr_t server_thread_attr;
+    pthread_t server_thread;
+
+    params.sched_priority = sched_get_priority_max(SCHED_FIFO);
+    pthread_attr_init(&server_thread_attr);
+    pthread_attr_setinheritsched(&server_thread_attr, PTHREAD_EXPLICIT_SCHED);
+    pthread_attr_setschedpolicy(&server_thread_attr, SCHED_FIFO);
+    pthread_attr_setschedparam(&server_thread_attr, &params);
+
+    if (pthread_create(&server_thread, &server_thread_attr, run_server, NULL) != 0){
+        printf("Thread creation failed\n");
+    }
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(13, &cpuset);
+    pthread_setaffinity_np(server_thread, sizeof(cpu_set_t), &cpuset);
+
+
 
     // ************************************************************ //
 
@@ -296,12 +359,14 @@ void init_cores(){
 
     pthread_join(tick_thread, NULL);
     pthread_attr_destroy(&tick_attr);
+    pthread_join(server_thread, NULL);
+    pthread_attr_destroy(&server_thread_attr);
 
 }
 
 int main(){
 
-    printf("%lu", sizeof(perf_event_array ));
+    init_cores();
 
     return 0;
 }

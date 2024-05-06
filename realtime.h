@@ -18,6 +18,8 @@
 #include <linux/perf_event.h>
 #include <sys/ioctl.h>
 #include <asm/unistd.h>
+#include <arpa/inet.h>
+#include <cjson/cJSON.h>
 
 
 
@@ -27,6 +29,8 @@
 #define RUNNING 1
 #define IDLE 0
 #define MAX_LENGTH 256
+
+#define DEBUG
 
 
 

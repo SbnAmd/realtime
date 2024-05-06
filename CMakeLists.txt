@@ -34,4 +34,4 @@ add_executable(realtime
         serdes/serdes.h
 )
 add_link_options("-pthread")
-target_link_libraries(realtime PRIVATE m sensors)
+target_link_libraries(realtime PRIVATE m sensors cjson)

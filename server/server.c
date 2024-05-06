@@ -5,7 +5,10 @@
 #include "server.h"
 
 
-
+extern pthread_cond_t server_cond;
+extern pthread_mutex_t server_mtx;
+extern char g_buffer[2048];
+extern int stop_flag;
 
 void setup_socket(int* server_fd, struct sockaddr_in* address, int* opt){
 
@@ -40,45 +43,65 @@ void serve(int* server_fd, struct sockaddr_in* address){
 
     int new_socket, valread;
     char buffer[BUFFER_SIZE] = {0};
-    struct Data data;
-    data.id = 10;
-    data.value = 3.14f;
-    strcpy(data.name, "John Doe");
     int addrlen = sizeof(address);
-    long cnt;
+    size_t sent_data_bytes;
+    size_t length;
+#ifdef DEBUG
     struct timespec start, end;
     long elapsed_ns;
+#endif
 
-    while (1) {
 
-//        printf("Waiting for connection...\n");
-        if ((new_socket = accept(*server_fd, (struct sockaddr *)address, (socklen_t*)&addrlen)) < 0) {
-            perror("accept");
-            exit(EXIT_FAILURE);
+
+
+
+    if ((new_socket = accept(*server_fd, (struct sockaddr *)address, (socklen_t*)&addrlen)) < 0) {
+        perror("accept");
+        exit(EXIT_FAILURE);
+    }
+    pthread_cond_signal(&server_cond);
+
+
+    while (stop_flag == 0) {
+
+        if(pthread_mutex_lock(&server_mtx) != 0){
+            printf("Tick locking failed\n");
         }
-        clock_gettime(CLOCK_MONOTONIC, &start);
-        // Serialize struct to JSON
-        sprintf(buffer, "{\"id\": %d, \"value\": %f, \"name\": \"%s\"}", data.id, data.value, data.name);
 
+        pthread_cond_wait(&server_cond, &server_mtx);
+#ifdef DEBUG
+        clock_gettime(CLOCK_MONOTONIC, &start);
+#endif
         // Send JSON data
-        send(new_socket, buffer, strlen(buffer), 0);
-//        printf("Data sent\n");
+        length = strlen(g_buffer);
+        send(new_socket, &length, sizeof(size_t), 0);
+
+        sent_data_bytes = 0;
+        while (sent_data_bytes < strlen(g_buffer))
+            sent_data_bytes += send(new_socket, &g_buffer[sent_data_bytes], length-sent_data_bytes, 0);
 
         // Clear buffer
         memset(buffer, 0, BUFFER_SIZE);
 
+
         // Receive data from client
-        valread = read(new_socket, buffer, BUFFER_SIZE);
+        valread = read(new_socket, g_buffer, 4);
         if (valread <= 0) {
             perror("read");
             exit(EXIT_FAILURE);
         }
-//        printf("Received: %s\n", buffer);
+#ifdef DEBUG
         clock_gettime(CLOCK_MONOTONIC, &end);
-
         elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-        double elapsed_ms = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
-        printf("Elapsed time : %.2f milliseconds\n", elapsed_ms);
+        printf("transfer time : %f\n",elapsed_ns / 1000000.0); // Elapsed time in milliseconds
+#endif
+        pthread_cond_signal(&server_cond);
+
+        if(pthread_mutex_unlock(&server_mtx) != 0){
+            printf("Tick unlocking failed\n");
+        }
+
+
     }
 
 
