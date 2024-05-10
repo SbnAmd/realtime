@@ -14,6 +14,8 @@
 #include "temperature/tempertature.h"
 #include "serdes/serdes.h"
 #include "server/server.h"
+#include "shared_memory/shared_memory.h"
+#include "utils/utils.h"
 
 
 

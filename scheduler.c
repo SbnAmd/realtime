@@ -85,25 +85,17 @@ void* worker(void* arg) {
 
     int core_idx = (int)(*((int*)arg));
 
-    if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
-        printf("Core %d locking failed\n", core_idx);
-    }
-
+    LOCK(&core_mutexes[core_idx]);
     core_status[core_idx] = IDLE;
     while (new_task_stat[core_idx] == 0)
         pthread_cond_wait(&manage_to_core_CVes[core_idx], &core_mutexes[core_idx]);
+    UNLOCK(&core_mutexes[core_idx]);
 
-    if(pthread_mutex_unlock(&core_mutexes[core_idx]) != 0){
-        printf("Core %d unlocking failed\n", core_idx);
-    }
 
     while (stop_flag == 0){
 
-        if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
-            printf("Core %d locking failed\n", core_idx);
-        }
-
         // Task selection
+        LOCK(&core_mutexes[core_idx]);
         task_idx = new_task_IDes[core_idx];
         new_task_stat[core_idx] = 0;
         if(task_idx == 0){
@@ -111,24 +103,15 @@ void* worker(void* arg) {
         } else{
             core_status[core_idx] = RUNNING;
         }
-
-        if(pthread_mutex_unlock(&core_mutexes[core_idx]) != 0){
-            printf("Core %d unlocking failed\n", core_idx);
-        }
+        UNLOCK(&core_mutexes[core_idx]);
 
         // Run task
         task_list[task_idx](core_idx);
 
-
-        if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
-            printf("Core %d locking failed\n", core_idx);
-        }
         // Set to IDLE
+        LOCK(&core_mutexes[core_idx]);
         core_status[core_idx] = IDLE;
-
-        if(pthread_mutex_unlock(&core_mutexes[core_idx]) != 0){
-            printf("Core %d unlocking failed\n", core_idx);
-        }
+        UNLOCK(&core_mutexes[core_idx]);
 
         // fixme
         // Notify task is done
@@ -136,17 +119,10 @@ void* worker(void* arg) {
 
 
         // Wait until tick and decide what to do
-        if(pthread_mutex_lock(&core_mutexes[core_idx]) != 0){
-            printf("Core %d locking failed\n", core_idx);
-        }
-
+        LOCK(&core_mutexes[core_idx]);
         while (new_task_stat[core_idx] == 0)
             pthread_cond_wait(&manage_to_core_CVes[core_idx], &core_mutexes[core_idx]);
-
-
-        if(pthread_mutex_unlock(&core_mutexes[core_idx]) != 0){
-            printf("Core %d unlocking failed\n", core_idx);
-        }
+        UNLOCK(&core_mutexes[core_idx]);
 
     }
 
@@ -158,26 +134,16 @@ void* manager(void* arg){
     int status[NUM_CORES];
     int new_tasks[NUM_CORES];
 
-    if(pthread_mutex_lock(&server_mtx) != 0){
-        printf("Tick locking failed\n");
-    }
-    pthread_cond_wait(&server_cond, &server_mtx);
-    if(pthread_mutex_unlock(&server_mtx) != 0){
-        printf("Tick unlocking failed\n");
-    }
+    WAIT_ON_LOCK(&server_mtx, &server_cond);
+
     while (stop_flag == 0){
 
         for(int i = 0; i < NUM_CORES; i++){
-            if(pthread_mutex_lock(&core_mutexes[i]) != 0){
-                printf("Core %d locking failed\n", i);
-                i--;
-                continue;
-            }
+
             // Copying core statuses
+            LOCK(&core_mutexes[i]);
             status[i] = core_status[i];
-            if(pthread_mutex_unlock(&core_mutexes[i]) != 0){
-                printf("Core %d unlocking failed\n", i);
-            }
+            UNLOCK(&core_mutexes[i]);
         }
 #ifdef DEBUG
         struct timespec start, end;
@@ -191,7 +157,7 @@ void* manager(void* arg){
 #ifdef DEBUG
         clock_gettime(CLOCK_MONOTONIC, &end);
         elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-        printf("transfer time : %f\n",elapsed_ns / 1000000.0); // Elapsed time in milliseconds
+        printf("temp get time : %f\n",elapsed_ns / 1000000.0); // Elapsed time in milliseconds
 #endif
         get_power_and_energy(&power, &energy_uj);
 
@@ -199,16 +165,11 @@ void* manager(void* arg){
         serialize(perf_event_array, g_buffer, NUM_CORES, &power, &energy_uj, temperatures);
 
         // todo: send status
+
         pthread_cond_signal(&server_cond);
 
-        // todo: wait until new schedule
-        if(pthread_mutex_lock(&server_mtx) != 0){
-            printf("Tick locking failed\n");
-        }
-        pthread_cond_wait(&server_cond, &server_mtx);
-        if(pthread_mutex_unlock(&server_mtx) != 0){
-            printf("Tick unlocking failed\n");
-        }
+        // Wait until new schedule
+        WAIT_ON_LOCK(&server_mtx, &server_cond);
 
         // Deserialize
         // fixme: if there is more than 9 tasks, 2 digit ID
@@ -219,32 +180,16 @@ void* manager(void* arg){
 
 
 
-        for(int i = 0; i < NUM_CORES; i++){
-            if(status[i] == IDLE){
-                if(pthread_mutex_lock(&core_mutexes[i]) != 0){
-                    printf("Core %d locking failed\n", i);
-                    i--;
-                    continue;
-                }
+        for(int i = 0; i < NUM_CORES; i++) {
+            if (status[i] == IDLE) {
+                LOCK(&core_mutexes[i]);
                 new_task_IDes[i] = new_tasks[i];
                 new_task_stat[i] = 1;
                 pthread_cond_signal(&manage_to_core_CVes[i]);
-                if(pthread_mutex_unlock(&core_mutexes[i]) != 0){
-                    printf("Core %d unlocking failed\n", i);
-                }
+                UNLOCK(&core_mutexes[i]);
             }
         }
-
-
-        if(pthread_mutex_lock(&tick_mtx) != 0){
-            printf("Tick locking failed\n");
-        }
-
-        pthread_cond_wait(&tick_cond, &tick_mtx);
-
-        if(pthread_mutex_unlock(&tick_mtx) != 0){
-            printf("Tick unlocking failed\n");
-        }
+        WAIT_ON_LOCK(&tick_mtx, &tick_cond);
 
     }
 
@@ -264,103 +209,48 @@ void* tick(void* arg){
 
 
 void init_cores(){
+
     struct sched_param params;
-    pthread_attr_t attrs[NUM_CORES], tick_attr, manager_attr;
-    pthread_t threads[NUM_CORES], tick_thread, manager_thread;
+    pthread_attr_t attrs[NUM_CORES], tick_attr, manager_attr, shared_mem_thread_attr;
+    pthread_t threads[NUM_CORES], tick_thread, manager_thread, shared_mem_thread;
 
 
     // Init
-
     for(int i =0 ; i < NUM_CORES; i++)
         core_IDes[i] = i;
 
+    // Create worker threads for tasks on 4 cores
     for(int i = 0; i < NUM_CORES; i++){
-        // Set real-time scheduling parameters
-        params.sched_priority = sched_get_priority_max(SCHED_FIFO);
-        pthread_attr_init(&attrs[i]);
-        pthread_attr_setinheritsched(&attrs[i], PTHREAD_EXPLICIT_SCHED);
-        pthread_attr_setschedpolicy(&attrs[i], SCHED_FIFO);
-        pthread_attr_setschedparam(&attrs[i], &params);
-
-        if (pthread_create(&threads[i], &attrs[i], worker, &core_IDes[i]) != 0){
-            printf("Thread creation failed\n");
-        }
-        cpu_set_t cpuset;
-        CPU_ZERO(&cpuset);
-        CPU_SET(i + CORE_BASE, &cpuset);
-        pthread_setaffinity_np(threads[i], sizeof(cpu_set_t), &cpuset);
-
-    }
-    // ************************************************************ //
-    params.sched_priority = sched_get_priority_max(SCHED_FIFO);
-    pthread_attr_init(&manager_attr);
-    pthread_attr_setinheritsched(&manager_attr, PTHREAD_EXPLICIT_SCHED);
-    pthread_attr_setschedpolicy(&manager_attr, SCHED_FIFO);
-    pthread_attr_setschedparam(&manager_attr, &params);
-
-    if (pthread_create(&manager_thread, &manager_attr, manager, NULL) != 0){
-        printf("Manager thread failed\n");
+        assign_task_to_core(&params, &attrs[i], &threads[i], i + CORE_BASE, worker, &core_IDes[i]);
     }
 
-    cpu_set_t manager_cpuset;
-    CPU_ZERO(&manager_cpuset);
-    CPU_SET(15, &manager_cpuset);
-    pthread_setaffinity_np(manager_thread, sizeof(cpu_set_t), &manager_cpuset);
+    // Create manager task
+    assign_task_to_core(&params, &manager_attr, &manager_thread, 15, manager, NULL);
 
-    // ************************************************************ //
-    params.sched_priority = sched_get_priority_max(SCHED_FIFO);
-    pthread_attr_init(&tick_attr);
-    pthread_attr_setinheritsched(&tick_attr, PTHREAD_EXPLICIT_SCHED);
-    pthread_attr_setschedpolicy(&tick_attr, SCHED_FIFO);
-    pthread_attr_setschedparam(&tick_attr, &params);
+    // Create tick thread
+    assign_task_to_core(&params, &tick_attr, &tick_thread, 14, tick, NULL);
 
-    if (pthread_create(&tick_thread, &tick_attr, tick, NULL) != 0){
-        printf("Tick thread failed\n");
-    }
-
-    cpu_set_t tick_cpuset;
-    CPU_ZERO(&tick_cpuset);
-    CPU_SET(14, &tick_cpuset);
-    pthread_setaffinity_np(tick_thread, sizeof(cpu_set_t), &tick_cpuset);
-
-    // ************************************************************ //
-    pthread_attr_t server_thread_attr;
-    pthread_t server_thread;
-
-    params.sched_priority = sched_get_priority_max(SCHED_FIFO);
-    pthread_attr_init(&server_thread_attr);
-    pthread_attr_setinheritsched(&server_thread_attr, PTHREAD_EXPLICIT_SCHED);
-    pthread_attr_setschedpolicy(&server_thread_attr, SCHED_FIFO);
-    pthread_attr_setschedparam(&server_thread_attr, &params);
-
-    if (pthread_create(&server_thread, &server_thread_attr, run_server, NULL) != 0){
-        printf("Thread creation failed\n");
-    }
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(13, &cpuset);
-    pthread_setaffinity_np(server_thread, sizeof(cpu_set_t), &cpuset);
+    // Create shared mem thread
+    assign_task_to_core(&params, &shared_mem_thread_attr, &shared_mem_thread, 13, shared_mem_worker, NULL);
 
 
-
-    // ************************************************************ //
-
+    // Run for 20 secs
     usleep(20000000);
     stop_flag = 1;
-
 
     for(int i = 0; i < NUM_CORES; i++){
         pthread_join(threads[i], NULL);
         pthread_attr_destroy(&attrs[i]);
     }
 
+    // Release all
     pthread_join(manager_thread, NULL);
     pthread_attr_destroy(&manager_attr);
 
     pthread_join(tick_thread, NULL);
     pthread_attr_destroy(&tick_attr);
-    pthread_join(server_thread, NULL);
-    pthread_attr_destroy(&server_thread_attr);
+    pthread_join(shared_mem_thread, NULL);
+    pthread_attr_destroy(&shared_mem_thread_attr);
 
 }
 

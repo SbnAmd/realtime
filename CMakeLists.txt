@@ -32,6 +32,10 @@ add_executable(realtime
         realtime.h
         serdes/serdes.c
         serdes/serdes.h
+        shared_memory/shared_memory.h
+        shared_memory/shared_memory.c
+        utils/utils.h
+        utils/utils.c
 )
 add_link_options("-pthread")
 target_link_libraries(realtime PRIVATE m sensors cjson)

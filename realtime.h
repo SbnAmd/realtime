@@ -20,6 +20,10 @@
 #include <asm/unistd.h>
 #include <arpa/inet.h>
 #include <cjson/cJSON.h>
+#include <signal.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+
 
 
 
