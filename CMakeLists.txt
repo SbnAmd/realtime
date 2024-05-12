@@ -36,6 +36,12 @@ add_executable(realtime
         shared_memory/shared_memory.c
         utils/utils.h
         utils/utils.c
+        threads/tick.h
+        threads/tick.c
+        threads/realtime_t.h
+        threads/realtime_t.c
+        threads/manager.h
+        threads/manager.c
 )
 add_link_options("-pthread")
 target_link_libraries(realtime PRIVATE m sensors cjson)

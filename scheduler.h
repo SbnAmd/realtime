@@ -16,19 +16,14 @@
 #include "server/server.h"
 #include "shared_memory/shared_memory.h"
 #include "utils/utils.h"
+#include "threads/manager.h"
+#include "threads/realtime_t.h"
+#include "threads/tick.h"
 
 
 
 
 
-void* worker(void* arg) ;
-void my_func1();
-void my_func2();
-void my_func3();
-void my_func4();
-void my_func5();
-void my_func6();
-void idle();
 
 
 #endif //REALTIME_SCHEDULER_H

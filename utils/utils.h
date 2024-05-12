@@ -35,4 +35,11 @@
 
 void assign_task_to_core(struct sched_param* params, pthread_attr_t* attr, pthread_t* thread, int core, void* worker, int* arg);
 
+void extract_tasks(int* tasks_list, char* recv_buffer){
+
+    for(int j=0; j < NUM_CORES*2; j+=2){
+                tasks_list[j/2] = atoi((char*)&recv_buffer[j])*10 + atoi((char*)&recv_buffer[j+1])*10;
+        }
+}
+
 #endif //REALTIME_UTILS_H
