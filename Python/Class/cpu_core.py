@@ -1,5 +1,5 @@
 from enum import Enum
-from tick import Tick
+from Python.Class.tick import Tick
 
 
 class CoreStatus(Enum):
@@ -58,7 +58,7 @@ class Core(Tick):
         self.add_to_timeline(self.create_time_slice(status, temp))
         self.add_to_temperature_timeline(temp)
 
-        if status['status'] == 'IDLE':
+        if status['status'] == 0:
             self.set_status(CoreStatus.IDLE)
 
     def create_time_slice(self, status: dict, temp):

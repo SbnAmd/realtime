@@ -8,6 +8,6 @@ class Mapper:
         map_dict = dict()
         for core in cores:
             if cores[core].is_free():
-                map_dict[str(core.get_idx())] = next_tasks.pop()
+                map_dict[core] = next_tasks.pop()
 
-        return ma
+        return map_dict

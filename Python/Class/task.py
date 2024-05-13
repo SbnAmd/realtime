@@ -1,5 +1,5 @@
 from enum import Enum
-from tick import Tick
+from Python.Class.tick import Tick
 
 
 class TaskStatus(Enum):
@@ -47,11 +47,13 @@ class Task(Tick):
         return self.status
 
     def update_status(self, status, temp: float):
-        self.update_abs_values(status)
-        self.add_to_timeline(self.create_time_slice(status, temp))
 
-        if status['status'] == 'IDLE':
-            self.set_status(TaskStatus.INACTIVE)
+        if status is not None:
+            self.update_abs_values(status)
+            self.add_to_timeline(self.create_time_slice(status, temp))
+
+            if status['status'] == 0:
+                self.set_status(TaskStatus.INACTIVE)
 
         if self.get_tick() % self.period == 0:
             self.set_status(TaskStatus.ACTIVE)

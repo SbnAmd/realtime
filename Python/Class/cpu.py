@@ -1,8 +1,10 @@
 from enum import Enum
-from cpu_core import Core
-from task import Task, TaskStatus
-from tick import Tick
-from globals import task_IDes
+from Python.Class.cpu_core import Core
+from Python.Class.task import Task, TaskStatus
+from Python.Class.tick import Tick
+from Python.Class.globals import task_IDes
+# from Test.status_generator import StatusGenerator
+
 import os
 
 fifo_path1 = "/tmp/signal_pipe1"
@@ -39,10 +41,14 @@ class CPU(Tick):
         self.init_mapper(mapper)
 
         # Communication with C code
-        self.init_pipes()
+        # fixme : commented for test
+        # self.init_pipes()
         self.length_rx_fd = None
         self.status_rx_fd = None
         self.task_tx_fd = None
+
+        # todo: for test
+        # self.fake_generator = StatusGenerator()
 
     def __del__(self):
         os.close(self.length_rx_fd)
@@ -74,25 +80,8 @@ class CPU(Tick):
         self.status_rx_fd = os.open(fifo_path2, os.O_RDWR)
         self.task_tx_fd = os.open(fifo_path3, os.O_RDWR)
 
-    def get_high_priority_tasks(self, n):
-        deadline_dict = dict()
-        if n > 0:
-            for task in self.task_list:
-                if task.get_status() == TaskStatus.ACTIVE:
-                    deadline = (int(self.get_tick()/task.period) + 1)*task.period - self.get_tick()
-                    deadline_dict[task.get_task_name()] = deadline
-            deadline_dict = {k: v for k, v in sorted(deadline_dict.items(), key=lambda item: item[1])}
-
-        cnt = 0
-        self.next_tasks = []
-        for task_name in deadline_dict:
-            if cnt >= n:
-                break
-            self.next_tasks.append(task_name)
-            cnt += 1
-
     def get_execution_status(self):
-        status_data = dict()
+        status_data = self.fake_generator.gen_status()
         # todo: get data from C
         self.cores['0'].update_status(status_data['performance_counters']['core0'], status_data['temperatures']['core8'])
         self.cores['1'].update_status(status_data['performance_counters']['core1'], status_data['temperatures']['core9'])
@@ -102,30 +91,21 @@ class CPU(Tick):
         # Task status update
         for task in self.task_list:
             if task.get_task_name() == status_data['performance_counters']['core0']['name']:
-                task.update_status(status_data['performance_counters']['core0'])
+                task.update_status(status_data['performance_counters']['core0'], status_data['temperatures']['core8'])
             elif task.get_task_name() == status_data['performance_counters']['core1']['name']:
-                task.update_status(status_data['performance_counters']['core1'])
+                task.update_status(status_data['performance_counters']['core1'], status_data['temperatures']['core9'])
             elif task.get_task_name() == status_data['performance_counters']['core2']['name']:
-                task.update_status(status_data['performance_counters']['core2'])
+                task.update_status(status_data['performance_counters']['core2'], status_data['temperatures']['core10'])
             elif task.get_task_name() == status_data['performance_counters']['core3']['name']:
-                task.update_status(status_data['performance_counters']['core3'])
+                task.update_status(status_data['performance_counters']['core3'], status_data['temperatures']['core11'])
             else:
-                task.update_status(None)
+                task.update_status(None, None)
 
         self.power_timeline.append(status_data['power'])
         self.energy_timeline.append(status_data['energy'])
 
     def schedule(self):
-
-        free_cores = 0
-        for core in self.cores:
-            if self.cores[core].is_free():
-                free_cores += 1
-                self.free_cores[str(core.get_idx())] = True
-            else:
-                self.free_cores[str(core.get_idx())] = False
-
-        self.get_high_priority_tasks(free_cores)
+        self.scheduler.schedule(self.cores, self.free_cores, self)
 
     def map_to_core(self):
         self.task_map = self.mapper.map(self.cores, self.next_tasks)
@@ -139,7 +119,12 @@ class CPU(Tick):
             else:
                 byte_array.extend('0'.encode())
                 byte_array.extend('0'.encode())
-        os.write(self.task_tx_fd, byte_array)
+        # fixme : commented for test
+        # os.write(self.task_tx_fd, byte_array)
+        for core in self.cores:
+            self.cores[core].tick()
+        for task in self.task_list:
+            task.tick()
 
     def run_frequency_scaling(self):
         pass
