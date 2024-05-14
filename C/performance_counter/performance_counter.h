@@ -8,9 +8,10 @@
 
 #include "C/realtime.h"
 #include "C/tasks/tasks.h"
+#include "C/function_types/function_types.h"
 
 
-typedef void (*FunctionPtr)();
+//typedef void (*FunctionPtr)();
 
 
 long perf_event_open(struct perf_event_attr *hw_event, pid_t pid,

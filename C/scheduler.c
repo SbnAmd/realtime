@@ -4,6 +4,7 @@
 
 
 #include "scheduler.h"
+#include "string.h"
 
 extern int core_IDes[NUM_CORES];
 extern int stop_flag;
@@ -38,25 +39,48 @@ void init_cores(){
     usleep(1000*PERIOD);
     stop_flag = 1;
 
+    printf("waiting to join\n");
+
+    pthread_join(manager_thread, NULL);
+    pthread_attr_destroy(&manager_attr);
+    printf("manager joined\n");
+
+    pthread_join(tick_thread, NULL);
+    printf("tick joined\n");
+    pthread_attr_destroy(&tick_attr);
+
+    if (pthread_cancel(shared_mem_thread) != 0) {
+        fprintf(stderr, "Failed to cancel thread\n");
+    }
+    pthread_join(shared_mem_thread, NULL);
+    printf("shared mem joined\n");
+    pthread_attr_destroy(&shared_mem_thread_attr);
+
     for(int i = 0; i < NUM_CORES; i++){
+        if (pthread_cancel(threads[i]) != 0) {
+            fprintf(stderr, "Failed to cancel thread\n");
+        }
         pthread_join(threads[i], NULL);
         pthread_attr_destroy(&attrs[i]);
     }
+    printf("workers joined\n");
 
     // Release all
-    pthread_join(manager_thread, NULL);
-    pthread_attr_destroy(&manager_attr);
 
-    pthread_join(tick_thread, NULL);
-    pthread_attr_destroy(&tick_attr);
-    pthread_join(shared_mem_thread, NULL);
-    pthread_attr_destroy(&shared_mem_thread_attr);
+
+
 
 }
 
 int main(){
-
     init_cores();
+
+//    qsort_small();
+//    qsort_large();
+//    bitcnts_large();
+//    bitcnts_small();
+//    basicmath_small();
+//    basicmath_large();
 
     return 0;
 }

@@ -8,6 +8,7 @@
 #include "C/realtime.h"
 #include "C/tasks/tasks.h"
 #include "C/performance_counter/performance_counter.h"
+#include "C/function_types/function_types.h"
 
 
 
@@ -20,6 +21,8 @@ void my_func4();
 void my_func5();
 void my_func6();
 void idle();
+
+void task(FunctionPtr real_task, int core_idx, char *name);
 
 
 

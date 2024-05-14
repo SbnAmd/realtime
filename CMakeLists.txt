@@ -43,6 +43,7 @@ add_executable(realtime
         C/threads/manager.h
         C/threads/manager.c
         main.c
+        C/function_types/function_types.h
 )
 add_link_options("-pthread")
 target_link_libraries(realtime PRIVATE m sensors cjson)

@@ -14,6 +14,7 @@
 #include <time.h>
 #include <float.h>
 #include "bitops.h"
+#include "C/realtime.h"
 
 #define FUNCS  7
 #define UNLIMIT

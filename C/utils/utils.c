@@ -26,22 +26,20 @@ void assign_task_to_core(struct sched_param* params, pthread_attr_t* attr, pthre
 }
 
 void extract_tasks(int* tasks_list, char* recv_buffer){
-    char c1, c2;
-    for(int k =0 ; k < 8; k++){
-        char c = recv_buffer[k];
-        printf("gbuff[%d] = %d\n", k, atoi(&c));
+    char arr[NUM_CORES*2];
+    long n;
+    int _2dig_num;
+    for(int j=0; j < NUM_CORES * 2; j+=1) {
+        arr[j] = recv_buffer[j];
     }
-    for(int j=0; j < NUM_CORES * 2; j+=2){
-        int recv_task_id;
 
-        c1 = (char)recv_buffer[j];
-//        c1 = (char) "0";
-        c2 = recv_buffer[j+1];
-        recv_task_id=  atoi(&c1)*10 + atoi(&c2);
-#ifdef DEBUG
-        printf("%d - %d\n", atoi(&c1) ,atoi(&c2));
-        printf("%c - %c\n",c1 ,c2);
-#endif
-        tasks_list[j/2] = recv_task_id;
+    n = strtol(arr, (char**)NULL, 10);
+
+    for(int j=NUM_CORES*2 - 1; j >= 0; j-=2) {
+        _2dig_num = n % 100;
+        tasks_list[j / 2] = _2dig_num;
+        n = (n - _2dig_num) / 100;
+
     }
+
 }

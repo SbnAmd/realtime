@@ -84,6 +84,8 @@ void basicmath_small(){
 
     }
     usqrt(l, &q);
+
+
 }
 
 
@@ -164,7 +166,6 @@ void basicmath_large(){
     }
 
 
-
 }
 
 
@@ -222,12 +223,16 @@ void bitcnts(long in){
 
 void bitcnts_large(){
 
+
     bitcnts(1125000);
+
 }
 
 void bitcnts_small(){
 
+
     bitcnts(75000);
+
 }
 
 
@@ -237,19 +242,14 @@ void qsort_small(){
     FILE *fp;
     int i,count=0;
 
-    if (0) {
 
-    }
-    else {
-        fp = fopen("/home/sbn/Desktop/realtime/tasks/input_small.dat","r");
+    fp = fopen("/home/sbn/Desktop/realtime/C/tasks/input_small.dat","r");
 
-        while((fscanf(fp, "%s", &array[count].qstring) == 1) && (count < MAXARRAY)) {
-            count++;
-        }
+    while((fscanf(fp, "%s", &array[count].qstring) == 1) && (count < MAXARRAY)) {
+        count++;
     }
 
     qsort(array,count,sizeof(struct myStringStruct),compare);
-
 
 
 }
@@ -266,7 +266,7 @@ void qsort_large(){
 
     }
     else {
-        fp = fopen("/home/sbn/Desktop/realtime/tasks/input_large.dat","r");
+        fp = fopen("/home/sbn/Desktop/realtime/C/tasks/input_large.dat","r");
 
         while((fscanf(fp, "%d", &x) == 1) && (fscanf(fp, "%d", &y) == 1) && (fscanf(fp, "%d", &z) == 1) &&  (count < MAXARRAY)) {
             array[count].x = x;

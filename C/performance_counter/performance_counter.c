@@ -201,7 +201,9 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
 
     // Run task
     clock_gettime(CLOCK_MONOTONIC, &start);
+
     task();
+
     clock_gettime(CLOCK_MONOTONIC, &end);
 
     // Disable events

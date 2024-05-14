@@ -24,12 +24,10 @@ void (*task_list[7])(int)={&idle, &my_func1, &my_func2, &my_func3, &my_func4, &m
 
 void task(FunctionPtr real_task, int core_idx, char *name){
 
-    #ifdef DEBUG
-        printf("%s\n", name);
-    #endif
-
         struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
         strcpy(perf_event->name, name);
+
+//    real_task();
         run_task_and_get_perf_event(real_task, perf_event, core_idx);
 
 }
@@ -85,6 +83,7 @@ void* worker(void* arg) {
     while (kill_flag == 0){
 
         // Change thread status
+
         LOCK(&core_mutexes[core_idx]);
         task_idx = new_task_IDes[core_idx];
         new_task_stat[core_idx] = 0;
@@ -94,9 +93,7 @@ void* worker(void* arg) {
             core_status[core_idx] = RUNNING;
         }
         UNLOCK(&core_mutexes[core_idx]);
-#ifdef DEBUG
-        printf("worker %d, task id %d\n", core_idx, task_idx);
-#endif
+
         // Run task
         task_list[task_idx](core_idx);
 

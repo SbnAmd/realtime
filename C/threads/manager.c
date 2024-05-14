@@ -55,6 +55,7 @@ void* manager(void* arg){
         printf("temp get time : %f\n",elapsed_ns / 1000000.0); // Elapsed time in milliseconds
 #endif
 
+
         // Get total cpu power and energy
         get_power_and_energy(&power, &energy_uj);
 
@@ -71,6 +72,7 @@ void* manager(void* arg){
         // fixme: if there is more than 99 tasks, if
         extract_tasks(new_tasks, g_buffer);
 
+
         // Dispatch tasks
 
         for(int i = 0; i < NUM_CORES; i++) {
@@ -84,13 +86,26 @@ void* manager(void* arg){
             }
         }
 
-
         WAIT_ON_LOCK(&tick_mtx, &tick_cond);
 
-        if(stop_flag == 1)
+        if(stop_flag == 1){
             kill_flag = 1;
+            for(int i = 0; i < NUM_CORES; i++){
+                UNLOCK(&core_mutexes[i]);
+                pthread_cond_signal(&manage_to_core_CVes[i]);
+            }
+#ifdef DEBUG
+            printf("break, kill flag = %d\n", kill_flag);
+#endif
+            for(int i = 0; i < NUM_CORES; i++){
+                UNLOCK(&core_mutexes[i]);
+                pthread_cond_signal(&manage_to_core_CVes[i]);
+            }
+            break;
+        }
 
     }
+
 
 }
 
