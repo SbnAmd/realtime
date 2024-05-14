@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
-#include "scheduler.h"
+#include "C/threads/init.h"
 #include <time.h>
 #include <bits/types/struct_sched_param.h>
 #include <string.h>

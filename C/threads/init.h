@@ -2,12 +2,12 @@
 // Created by sbn on 5/3/24.
 //
 
-#ifndef REALTIME_SCHEDULER_H
-#define REALTIME_SCHEDULER_H
+#ifndef REALTIME_INIT_H
+#define REALTIME_INIT_H
 
 
 
-#include "realtime.h"
+#include "C/realtime.h"
 #include "C/tasks/tasks.h"
 #include "C/performance_counter/performance_counter.h"
 #include "C/power/power.h"
@@ -22,8 +22,7 @@
 
 
 
+void init();
 
 
-
-
-#endif //REALTIME_SCHEDULER_H
+#endif //REALTIME_INIT_H

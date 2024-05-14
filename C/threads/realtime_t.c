@@ -102,11 +102,6 @@ void* worker(void* arg) {
         core_status[core_idx] = IDLE;
         UNLOCK(&core_mutexes[core_idx]);
 
-        // fixme
-        // Notify manager, task is done
-//        pthread_cond_signal(&core_to_manage_CVes[core_idx]);
-
-
         // Wait until tick and next schedule
         LOCK(&core_mutexes[core_idx]);
         while (new_task_stat[core_idx] == 0)

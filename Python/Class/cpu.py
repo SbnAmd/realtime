@@ -80,27 +80,31 @@ class CPU(Tick):
         self.status_rx_fd = os.open(fifo_path2, os.O_RDWR)
         self.task_tx_fd = os.open(fifo_path3, os.O_RDWR)
 
+    def update_cores(self, status_data):
+        for core_idx in range(4):
+            core_status_data = status_data['performance_counters'][f'core{core_idx}']
+            core_temperature = status_data['temperatures'][f'core{core_idx + 8}']
+            self.cores[str(core_idx)].update_status(core_status_data, core_temperature)
+
+    def update_tasks(self, status_data):
+        for task in self.task_list:
+            task_name = task.get_task_name()
+            for core_idx in range(4):
+                core_data = status_data['performance_counters'][f'core{core_idx}']
+                if task_name == core_data['name']:
+                    task.update_status(core_data, status_data['temperatures'][f'core{core_idx + 8}'])
+                    break
+            else:  # If no matching task name is found
+                task.update_status(None, None)
+
     def get_execution_status(self):
         status_data = self.fake_generator.gen_status()
         # todo: get data from C
-        self.cores['0'].update_status(status_data['performance_counters']['core0'], status_data['temperatures']['core8'])
-        self.cores['1'].update_status(status_data['performance_counters']['core1'], status_data['temperatures']['core9'])
-        self.cores['2'].update_status(status_data['performance_counters']['core2'], status_data['temperatures']['core10'])
-        self.cores['3'].update_status(status_data['performance_counters']['core3'], status_data['temperatures']['core11'])
 
-        # Task status update
-        for task in self.task_list:
-            if task.get_task_name() == status_data['performance_counters']['core0']['name']:
-                task.update_status(status_data['performance_counters']['core0'], status_data['temperatures']['core8'])
-            elif task.get_task_name() == status_data['performance_counters']['core1']['name']:
-                task.update_status(status_data['performance_counters']['core1'], status_data['temperatures']['core9'])
-            elif task.get_task_name() == status_data['performance_counters']['core2']['name']:
-                task.update_status(status_data['performance_counters']['core2'], status_data['temperatures']['core10'])
-            elif task.get_task_name() == status_data['performance_counters']['core3']['name']:
-                task.update_status(status_data['performance_counters']['core3'], status_data['temperatures']['core11'])
-            else:
-                task.update_status(None, None)
-
+        # Update cores and tasks
+        self.update_cores(status_data)
+        self.update_tasks(status_data)
+        # Add power and energy
         self.power_timeline.append(status_data['power'])
         self.energy_timeline.append(status_data['energy'])
 
@@ -108,19 +112,20 @@ class CPU(Tick):
         self.scheduler.schedule(self.cores, self.free_cores, self)
 
     def map_to_core(self):
+        # New tasks are mapped to cores
         self.task_map = self.mapper.map(self.cores, self.next_tasks)
 
     def execute(self):
         byte_array = bytearray()
         for core_id in ['0', '1', '2', '3']:
-            if core_id in self.task_map:
-                byte_array.extend(task_IDes[self.task_map[core_id]][0].encode())
-                byte_array.extend(task_IDes[self.task_map[core_id]][1].encode())
-            else:
-                byte_array.extend('0'.encode())
-                byte_array.extend('0'.encode())
+            task_code = self.task_map.get(core_id, '0')
+            task_id = task_IDes.get(task_code, '00')
+            byte_array.extend(task_id.encode())
+            # todo  :change mapped cores and tasks status
         # fixme : commented for test
         # os.write(self.task_tx_fd, byte_array)
+
+        # Tick tasks and cores
         for core in self.cores:
             self.cores[core].tick()
         for task in self.task_list:

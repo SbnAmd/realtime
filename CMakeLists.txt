@@ -6,8 +6,8 @@ set(CMAKE_C_STANDARD 11)
 include_directories(.)
 
 add_executable(realtime
-        C/scheduler.c
-        C/scheduler.h
+        C/threads/init.c
+        C/threads/init.h
         C/tasks/tasks.h
         C/tasks/tasks.c
         C/tasks/bitarray.c

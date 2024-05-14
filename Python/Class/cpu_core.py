@@ -1,5 +1,6 @@
 from enum import Enum
 from Python.Class.tick import Tick
+from Python.Class.performance_counter import PerformanceCounter as PerfCount
 
 
 class CoreStatus(Enum):
@@ -29,9 +30,6 @@ class Core(Tick):
         self.context_switches = 0
         self.migrations = 0
 
-        # Temperature
-        self.temperature_timeline = list()
-
     def set_status(self, status: CoreStatus):
         self.status = status
 
@@ -47,40 +45,19 @@ class Core(Tick):
     def get_running_task_name(self):
         return self.current_task
 
-    def add_to_timeline(self, time_slice: dict):
+    def add_to_timeline(self, time_slice):
         self.timeline.append(time_slice)
-
-    def add_to_temperature_timeline(self, temp: float):
-        self.temperature_timeline.append(temp)
 
     def update_status(self, status: dict, temp):
         self.update_abs_values(status)
         self.add_to_timeline(self.create_time_slice(status, temp))
-        self.add_to_temperature_timeline(temp)
 
         if status['status'] == 0:
             self.set_status(CoreStatus.IDLE)
 
     def create_time_slice(self, status: dict, temp):
-        time_slice = dict()
-        if self.status == CoreStatus.RUNNING:
-            time_slice['task'] = status['name']
-            time_slice['cycles'] = status['cpu_cycles']
-            time_slice['instructions'] = status['cpu_instructions']
-            time_slice['cache_misses'] = status['cpu_cache_misses']
-            time_slice['cache_references'] = status['cpu_cache_references']
-            time_slice['branch_misses'] = status['cpu_branch_misses']
-            time_slice['branch_instructions'] = status['cpu_branch_instructions']
-            time_slice['page_faults'] = status['cpu_page_faults']
-            time_slice['migrations'] = status['cpu_migrations']
-            time_slice['context_switches'] = status['cpu_context_switches']
-            time_slice['frequency'] = None
-            time_slice['temperature'] = temp
-            time_slice['duration'] = status['duration']
-            time_slice['status'] = status['status']
-        time_slice['tick'] = self.get_tick()
-
-        return time_slice
+        new_perfcount = PerfCount(status, None, self.status, self.get_tick(), temp)
+        return new_perfcount
 
     def update_abs_values(self, status: dict):
         if self.status == CoreStatus.RUNNING:
