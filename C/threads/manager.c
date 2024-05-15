@@ -36,7 +36,7 @@ void copy_cores_status(int* status){
 void dispatch_tasks(int* status, int* new_tasks){
 
     for(int i = 0; i < NUM_CORES; i++) {
-        if (status[i] == IDLE) {
+        if (status[i] == IDLE && new_tasks[i] != -1) {
             LOCK(&core_mutexes[i]);
 
             new_task_IDes[i] = new_tasks[i];
@@ -77,8 +77,7 @@ void* manager(void* arg){
         WAIT_ON_LOCK(&server_mtx, &server_cond);
 
         // Deserialize
-        // fixme: if there are more than 99 tasks, it fails
-        extract_tasks(new_tasks, g_buffer);
+        deserialize(new_tasks, g_buffer);
 
 
         // Dispatch tasks

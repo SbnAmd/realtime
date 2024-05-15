@@ -52,19 +52,24 @@ void* shared_mem_worker() {
 
         length = strlen(g_buffer);
         write(data_fd, g_buffer, length);
-
+#ifdef DEBUG
+        printf("sending status\n");
+#endif
         write(data_len_fifo_fd, &length, sizeof(size_t));
 
         // Clear buffer
-        memset(g_buffer, 0, BUFFER_SIZE);
+        memset(g_buffer, '\0', 2048);
 
 
         // Receive data from client
-        valread = read(new_schedule_fd, g_buffer, NUM_CORES*2);
+        valread = read(new_schedule_fd, g_buffer, 2048);
         if (valread <= 0) {
             perror("read");
             exit(EXIT_FAILURE);
         }
+#ifdef DEBUG
+        printf("received new schedule\n");
+#endif
 
 #ifdef DEBUG
         clock_gettime(CLOCK_MONOTONIC, &end);

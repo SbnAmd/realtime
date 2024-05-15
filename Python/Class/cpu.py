@@ -42,10 +42,10 @@ class CPU(Tick):
         self.init_mapper(mapper)
 
         # Communication with C code
-        self.init_pipes()
         self.length_rx_fd = None
         self.status_rx_fd = None
         self.task_tx_fd = None
+        self.init_pipes()
 
         # todo: for test
         # self.fake_generator = StatusGenerator()
@@ -91,9 +91,16 @@ class CPU(Tick):
         data = os.read(self.status_rx_fd, length)
         print('Received data len:', length)
         # Deserialize JSON data
-        print(data)
+        # print(data)
 
         return json.loads(data.decode('utf-8'))
+
+    def check_free_cores(self):
+        for core in self.cores:
+            if self.cores[core].is_free():
+                return True
+
+        return False
 
     def update_cores(self, status_data):
         for core_idx in range(4):
@@ -112,8 +119,10 @@ class CPU(Tick):
             else:  # If no matching task name is found
                 task.update_status(None, None)
 
-    def send_new_schedule(self, byte_array):
-        os.write(self.task_tx_fd, byte_array)
+    def send_new_schedule(self, data):
+        json_string = json.dumps(data)
+        print(f'new schedule = {data}, len = {len(bytes(json_string, "utf-8"))}')
+        os.write(self.task_tx_fd, bytes(json_string, 'utf-8'))
 
     def get_execution_status(self):
         # Get data
@@ -131,22 +140,28 @@ class CPU(Tick):
 
     def map_to_core(self):
         # New tasks are mapped to cores
-        self.task_map = self.mapper.map(self.cores, self.next_tasks)
+        print(self.next_tasks)
+        if len(self.next_tasks) > 0:
+            self.task_map = self.mapper.map(self.cores, self.next_tasks)
 
     def execute(self):
-        byte_array = bytearray()
-        for core_id in self.task_map:
-            task_code = self.task_map.get(core_id, '0')
-            task_id = task_IDes.get(task_code, '00')
-            byte_array.extend(task_id.encode())
+        schedule_data = {}
+        for core_id in ['0', '1', '2', '3']:
+            if core_id in self.task_map:
+                task_code = self.task_map.get(core_id, '0')
+                task_id = task_IDes.get(task_code, '00')
+                schedule_data[f'core{core_id}'] = int(task_id)
 
-            # Change mapped cores and tasks status
-            self.cores[core_id].set_status(CoreStatus.RUNNING)
-            for task in self.task_list:
-                if task.get_task_name() == self.task_map[core_id]:
-                    task.set_status(TaskStatus.RUNNING)
+                # Change mapped cores and tasks status
+                self.cores[core_id].set_status(CoreStatus.RUNNING)
+                for task in self.task_list:
+                    if task.get_task_name() == self.task_map[core_id]:
+                        task.set_status(TaskStatus.RUNNING)
+            else:
+                schedule_data[f'core{core_id}'] = -1
 
-        self.send_new_schedule(byte_array)
+        self.send_new_schedule(schedule_data)
+        self.task_map = {}
 
         # Tick tasks and cores
         for core in self.cores:
@@ -160,6 +175,7 @@ class CPU(Tick):
     def run(self):
         while True:
             self.get_execution_status()
-            self.schedule()
-            self.map_to_core()
+            if self.check_free_cores():
+                self.schedule()
+                self.map_to_core()
             self.execute()

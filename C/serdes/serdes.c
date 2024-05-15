@@ -105,3 +105,49 @@ void serialize(struct PerformanceEvents *events, char *buffer,
 
 }
 
+
+void deserialize(int* tasks, char* buffer){
+
+#ifdef DEBUG
+    printf("schedule data size = %lu\n", strlen(buffer));
+#endif
+    cJSON *json = cJSON_Parse(buffer);
+    if (json == NULL) {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL) {
+            fprintf(stderr, "Error before: %s\n", error_ptr);
+        }
+        exit(EXIT_FAILURE);
+    }
+
+    // Extract each value
+    cJSON *core0 = cJSON_GetObjectItemCaseSensitive(json, "core0");
+    if (cJSON_IsNumber(core0)) {
+        printf("core0: %d\n", core0->valueint);
+        tasks[0] = core0->valueint;
+    }
+
+    cJSON *core1 = cJSON_GetObjectItemCaseSensitive(json, "core1");
+    if (cJSON_IsNumber(core1)) {
+        printf("core1: %d\n", core1->valueint);
+        tasks[1] = core1->valueint;
+    }
+
+    cJSON *core2 = cJSON_GetObjectItemCaseSensitive(json, "core2");
+    if (cJSON_IsNumber(core2)) {
+        printf("core2: %d\n", core2->valueint);
+        tasks[2] = core2->valueint;
+    }
+
+    cJSON *core3 = cJSON_GetObjectItemCaseSensitive(json, "core3");
+    if (cJSON_IsNumber(core3)) {
+        printf("core3: %d\n", core3->valueint);
+        tasks[3] = core3->valueint;
+    }
+
+    // Free cJSON object
+    cJSON_Delete(json);
+
+
+
+}
