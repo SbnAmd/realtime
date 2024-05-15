@@ -1,20 +1,11 @@
 //
-// Created by sbn on 5/5/24.
+// Created by sbn on 5/15/24.
 //
 
-#include "performance_counter.h"
+#include "perf_count.h"
 
 
-
-
-long perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
-                     int cpu, int group_fd, unsigned long flags)
-{
-    return syscall(__NR_perf_event_open, hw_event, pid, cpu,
-                   group_fd, flags);
-}
-
-void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* perf_event, int core){
+void perf_count_test(FunctionPtr task, struct PerformanceEvents* perf_event, int core){
 
     int cpu_cycles_fd, cpu_instructions_fd, cpu_cache_misses_fd;
     int cpu_cache_references_fd, cpu_branch_misses_fd, cpu_branch_instructions_fd;
@@ -227,16 +218,15 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     read(cpu_context_switches_fd, &perf_event->cpu_context_switches, sizeof(long long));
     read(cpu_migrations_fd, &perf_event->cpu_migrations, sizeof(long long));
 #ifdef DEBUG
-//    printf("core = %d \n", core);
-//    printf("cycles = %lld \n", (*perf_event).cpu_cycles);
-//    printf("cpu_instructions = %lld \n", (*perf_event).cpu_instructions);
-//    printf("cpu_cache_misses = %lld \n", (*perf_event).cpu_cache_misses);
-//    printf("cpu_cache_references = %lld \n", (*perf_event).cpu_cache_references);
-//    printf("cpu_branch_misses = %lld \n", (*perf_event).cpu_branch_misses);
-//    printf("cpu_branch_instructions = %lld \n", (*perf_event).cpu_branch_instructions);
-//    printf("cpu_page_faults = %lld \n", (*perf_event).cpu_page_faults);
-//    printf("cpu_context_switches = %lld \n", (*perf_event).cpu_context_switches);
-//    printf("cpu_migrations = %lld \n", (*perf_event).cpu_migrations);
+    printf("cycles = %lld \n", (*perf_event).cpu_cycles);
+    printf("cpu_instructions = %lld \n", (*perf_event).cpu_instructions);
+    printf("cpu_cache_misses = %lld \n", (*perf_event).cpu_cache_misses);
+    printf("cpu_cache_references = %lld \n", (*perf_event).cpu_cache_references);
+    printf("cpu_branch_misses = %lld \n", (*perf_event).cpu_branch_misses);
+    printf("cpu_branch_instructions = %lld \n", (*perf_event).cpu_branch_instructions);
+    printf("cpu_page_faults = %lld \n", (*perf_event).cpu_page_faults);
+    printf("cpu_context_switches = %lld \n", (*perf_event).cpu_context_switches);
+    printf("cpu_migrations = %lld \n", (*perf_event).cpu_migrations);
 #endif
     // Time calc
     elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
@@ -255,22 +245,22 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
 
 }
 
-void* performance_worker(){
-
-    struct PerformanceEvents perf_data;
-
-    run_task_and_get_perf_event(bitcnts_large, &perf_data, 13);
-
-    printf("CPU CYCLES : %lld\n", perf_data.cpu_cycles);
-    printf("CPU INSTRUCTIONS : %lld\n", perf_data.cpu_instructions);
-    printf("CPU CACHE MISSES : %lld\n", perf_data.cpu_cache_misses);
-    printf("CPU CACHE REFERENCES : %lld\n", perf_data.cpu_cache_references);
-    printf("CPU BRANCH MISSES : %lld\n", perf_data.cpu_branch_misses);
-    printf("CPU BRANCH INSTRUCTIONS : %lld\n", perf_data.cpu_instructions);
-    printf("CPU BRANCH PAGE FAULTS : %lld\n", perf_data.cpu_page_faults);
-    printf("CPU BRANCH CONTEXT SWITCHES : %lld\n", perf_data.cpu_context_switches);
-    printf("CPU BRANCH MIGRATIONS : %lld\n", perf_data.cpu_migrations);
-
-
-
-}
+//void* performance_worker(){
+//
+//    struct PerformanceEvents perf_data;
+//
+//    run_task_and_get_perf_event(bitcnts_large, &perf_data, 13);
+//
+//    printf("CPU CYCLES : %lld\n", perf_data.cpu_cycles);
+//    printf("CPU INSTRUCTIONS : %lld\n", perf_data.cpu_instructions);
+//    printf("CPU CACHE MISSES : %lld\n", perf_data.cpu_cache_misses);
+//    printf("CPU CACHE REFERENCES : %lld\n", perf_data.cpu_cache_references);
+//    printf("CPU BRANCH MISSES : %lld\n", perf_data.cpu_branch_misses);
+//    printf("CPU BRANCH INSTRUCTIONS : %lld\n", perf_data.cpu_instructions);
+//    printf("CPU BRANCH PAGE FAULTS : %lld\n", perf_data.cpu_page_faults);
+//    printf("CPU BRANCH CONTEXT SWITCHES : %lld\n", perf_data.cpu_context_switches);
+//    printf("CPU BRANCH MIGRATIONS : %lld\n", perf_data.cpu_migrations);
+//
+//
+//
+//}

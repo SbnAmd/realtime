@@ -4,6 +4,7 @@
 
 #include "C/realtime.h"
 #include "C/threads/init.h"
+#include "Test/perf_count.h"
 
 
 pthread_cond_t tick_cond = PTHREAD_COND_INITIALIZER;
@@ -25,13 +26,15 @@ int stop_flag = 0;
 int kill_flag = 0;
 char g_buffer[2048] = {'\0'};
 
+void test(){
 
-
-
+    printf("perf test\n");
+}
 
 int main(){
 
     init();
+//    perf_count_test(test, perf_event_array, 8);
 
     return 0;
 }

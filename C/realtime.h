@@ -28,8 +28,8 @@
 
 
 #define NUM_CORES 4
-#define TOTAL_CORES 8
-#define CORE_BASE  12
+#define TOTAL_CORES 16
+#define CORE_BASE  8
 #define RUNNING 1
 #define PERIOD 20000
 #define IDLE 0

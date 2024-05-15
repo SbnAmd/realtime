@@ -19,6 +19,7 @@ extern int stop_flag;
 extern pthread_cond_t tick_cond;
 extern pthread_mutex_t tick_mtx;
 extern pthread_cond_t manage_to_core_CVes[NUM_CORES];
+extern int kill_flag;
 
 void copy_cores_status(int* status){
 

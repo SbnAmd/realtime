@@ -7,7 +7,7 @@
 
 #include "C/realtime.h"
 
-extern int kill_flag;
+
 
 void* tick(void* arg);
 

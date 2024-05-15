@@ -9,7 +9,7 @@
 
 #include "C/realtime.h"
 
-#define MAX_LINE_LENGTH 256
+#define MAX_LINE_LENGTH 16
 
 
 void get_core_temperatures(float* core_temperatures);

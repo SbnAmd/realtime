@@ -102,5 +102,6 @@ void serialize(struct PerformanceEvents *events, char *buffer,
     cJSON_Delete(root);
     free(json_string);
 
+
 }
 

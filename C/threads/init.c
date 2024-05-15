@@ -8,6 +8,7 @@
 
 extern int core_IDes[NUM_CORES];
 extern int stop_flag;
+extern int kill_flag;
 
 struct sched_param params;
 pthread_attr_t attrs[NUM_CORES], tick_attr, manager_attr, shared_mem_thread_attr;
@@ -65,6 +66,7 @@ void release_threads(){
 }
 
 void init(){
+    kill_flag = 0;
 
     // create and run pthreads [realtime cores threads, manager thread, tick thread, shared memory thread]
     init_threads();

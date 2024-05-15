@@ -20,7 +20,7 @@ extern pthread_cond_t tick_cond;
 extern pthread_mutex_t tick_mtx;
 extern pthread_cond_t manage_to_core_CVes[NUM_CORES];
 void (*task_list[7])(int)={&idle, &my_func1, &my_func2, &my_func3, &my_func4, &my_func5, &my_func6};
-
+extern int kill_flag;
 
 void task(FunctionPtr real_task, int core_idx, char *name){
 
@@ -28,7 +28,7 @@ void task(FunctionPtr real_task, int core_idx, char *name){
         strcpy(perf_event->name, name);
 
 //    real_task();
-        run_task_and_get_perf_event(real_task, perf_event, core_idx);
+        run_task_and_get_perf_event(real_task, perf_event, core_idx+CORE_BASE);
 
 }
 

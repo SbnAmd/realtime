@@ -4,13 +4,14 @@
 
 #include "tempertature.h"
 
-
+extern int kill_flag;
 
 void get_core_temperatures(float* core_temperatures) {
     FILE *fp;
-    char command[] = "sensors";
+    char command[] = "sudo rdmsr -p 0 -u -0 -f22:16 -a 0x19c";
     char line[MAX_LINE_LENGTH];
-    int core_id;
+    long n;
+    int core = 0;
 
     // Open a pipe to the sensors command
     fp = popen(command, "r");
@@ -18,21 +19,18 @@ void get_core_temperatures(float* core_temperatures) {
         perror("Error opening pipe");
     }
 
-    // Read each line of output from sensors
-    while (fgets(line, MAX_LINE_LENGTH, fp) != NULL) {
-        // Search for lines containing core temperature
-        if (strstr(line, "Core") != NULL /*&& strstr(line, "temp") != NULL*/) {
-            int core;
-            float temperature;
-            // Extract core ID and temperature from the line
-            if (sscanf(line, "Core %d:%f°C", &core, &temperature) == 2) {
-                // Store the temperature in the array
-                core_temperatures[core] = temperature;
-            }
-        }
+
+    // Read and print each line from the command output
+    while (fgets(line, sizeof(line), fp) != NULL) {
+
+        n = strtol(line, (char**)NULL, 10);
+        core_temperatures[core] = 100 - n;
+        core += 1;
     }
+
 
     // Close the pipe
     pclose(fp);
+
 
 }

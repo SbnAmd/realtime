@@ -5,6 +5,7 @@
 #include "tick.h"
 
 extern pthread_cond_t tick_cond;
+extern int kill_flag;
 
 void* tick(void* arg){
 

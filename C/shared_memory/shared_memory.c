@@ -9,6 +9,7 @@ extern int stop_flag;
 extern pthread_cond_t server_cond;
 extern pthread_mutex_t server_mtx;
 extern char g_buffer[2048];
+extern int kill_flag;
 
 
 void* shared_mem_worker() {
@@ -56,6 +57,7 @@ void* shared_mem_worker() {
 
         // Clear buffer
         memset(g_buffer, 0, BUFFER_SIZE);
+
 
         // Receive data from client
         valread = read(new_schedule_fd, g_buffer, NUM_CORES*2);
