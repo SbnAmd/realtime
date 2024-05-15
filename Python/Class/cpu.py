@@ -1,5 +1,5 @@
 from enum import Enum
-from Python.Class.cpu_core import Core
+from Python.Class.cpu_core import Core, CoreStatus
 from Python.Class.task import Task, TaskStatus
 from Python.Class.tick import Tick
 from Python.Class.globals import task_IDes
@@ -41,8 +41,7 @@ class CPU(Tick):
         self.init_mapper(mapper)
 
         # Communication with C code
-        # fixme : commented for test
-        # self.init_pipes()
+        self.init_pipes()
         self.length_rx_fd = None
         self.status_rx_fd = None
         self.task_tx_fd = None
@@ -97,6 +96,9 @@ class CPU(Tick):
             else:  # If no matching task name is found
                 task.update_status(None, None)
 
+    def send_new_schedule(self, byte_array):
+        os.write(self.task_tx_fd, byte_array)
+
     def get_execution_status(self):
         status_data = self.fake_generator.gen_status()
         # todo: get data from C
@@ -117,13 +119,18 @@ class CPU(Tick):
 
     def execute(self):
         byte_array = bytearray()
-        for core_id in ['0', '1', '2', '3']:
+        for core_id in self.task_map:
             task_code = self.task_map.get(core_id, '0')
             task_id = task_IDes.get(task_code, '00')
             byte_array.extend(task_id.encode())
-            # todo  :change mapped cores and tasks status
-        # fixme : commented for test
-        # os.write(self.task_tx_fd, byte_array)
+
+            # Change mapped cores and tasks status
+            self.cores[core_id].set_status(CoreStatus.RUNNING)
+            for task in self.task_list:
+                if task.get_task_name() == self.task_map[core_id]:
+                    task.set_status(TaskStatus.RUNNING)
+
+        self.send_new_schedule(byte_array)
 
         # Tick tasks and cores
         for core in self.cores:
