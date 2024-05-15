@@ -34,6 +34,8 @@
 #define PERIOD 20000
 #define IDLE 0
 #define MAX_LENGTH 256
+#define CYCLES_TO_RUN 10
+
 
 #define DEBUG
 

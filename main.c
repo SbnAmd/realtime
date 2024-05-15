@@ -5,6 +5,7 @@
 #include "C/realtime.h"
 #include "C/threads/init.h"
 #include "Test/perf_count.h"
+#include "Test/task_times.h"
 
 
 pthread_cond_t tick_cond = PTHREAD_COND_INITIALIZER;
@@ -31,6 +32,7 @@ int main(){
 
     init();
 
+//    tasks_time();
 
     return 0;
 }

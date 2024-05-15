@@ -72,7 +72,7 @@ void init(){
     init_threads();
 
     // Run for 1000 cycles
-    usleep(1000*PERIOD);
+    usleep(CYCLES_TO_RUN*PERIOD);
     stop_flag = 1;
 
     // Release all

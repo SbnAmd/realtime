@@ -4,6 +4,7 @@ from Python.Class.task import Task, TaskStatus
 from Python.Class.tick import Tick
 from Python.Class.globals import task_IDes
 import json
+from colorama import Fore
 # from Test.status_generator import StatusGenerator
 
 import os
@@ -84,14 +85,8 @@ class CPU(Tick):
         print("waiting for data")
 
         data = os.read(self.length_rx_fd, 8)
-
         length = int().from_bytes(data,byteorder='little')
-        # os.write(signal_fd,b'1')
-        # data = s.recv(length)
         data = os.read(self.status_rx_fd, length)
-        print('Received data len:', length)
-        # Deserialize JSON data
-        # print(data)
 
         return json.loads(data.decode('utf-8'))
 
@@ -121,7 +116,6 @@ class CPU(Tick):
 
     def send_new_schedule(self, data):
         json_string = json.dumps(data)
-        print(f'new schedule = {data}, len = {len(bytes(json_string, "utf-8"))}')
         os.write(self.task_tx_fd, bytes(json_string, 'utf-8'))
 
     def get_execution_status(self):
@@ -135,12 +129,13 @@ class CPU(Tick):
         self.power_timeline.append(status_data['power'])
         self.energy_timeline.append(status_data['energy'])
 
+        return status_data
+
     def schedule(self):
         self.scheduler.schedule(self.cores, self.free_cores, self)
 
     def map_to_core(self):
         # New tasks are mapped to cores
-        print(self.next_tasks)
         if len(self.next_tasks) > 0:
             self.task_map = self.mapper.map(self.cores, self.next_tasks)
 
@@ -168,14 +163,37 @@ class CPU(Tick):
             self.cores[core].tick()
         for task in self.task_list:
             task.tick()
+            return schedule_data
 
     def run_frequency_scaling(self):
         pass
 
+    def inform(self, status_data, schedule_data):
+        stat_list = []
+        task_name_list = []
+        for core_idx in range(4):
+            core_status_data = status_data['performance_counters'][f'core{core_idx}']
+            stat_list.append(core_status_data['status'])
+
+        print(Fore.YELLOW + f'recv status:\n '
+                            f'\tcore0 = {stat_list[0]}, \n\tcore1 = {stat_list[1]}, \n\tcore2 = {stat_list[2]}, \n\tcore3 = {stat_list[3]}')
+        for core in schedule_data:
+            if schedule_data[core] == -1:
+                task_name_list.append('None')
+            else:
+                for task_name in task_IDes:
+                    if int(task_IDes[task_name]) == schedule_data[core]:
+                        task_name_list.append(task_name)
+                        break
+        print(Fore.GREEN + f'scheduled tasks:\n \tcore0 --> {task_name_list[0]}, \n\tcore1 --> {task_name_list[1]}, \n\tcore2 --> {task_name_list[2]}, \n\tcore3 --> {task_name_list[3]}')
+        print(Fore.MAGENTA + "******************************")
+
     def run(self):
         while True:
-            self.get_execution_status()
+            status_data = self.get_execution_status()
             if self.check_free_cores():
                 self.schedule()
                 self.map_to_core()
-            self.execute()
+            schedule_data = self.execute()
+
+            self.inform(status_data, schedule_data)
