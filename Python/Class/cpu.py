@@ -3,6 +3,7 @@ from Python.Class.cpu_core import Core, CoreStatus
 from Python.Class.task import Task, TaskStatus
 from Python.Class.tick import Tick
 from Python.Class.globals import task_IDes
+import json
 # from Test.status_generator import StatusGenerator
 
 import os
@@ -79,6 +80,21 @@ class CPU(Tick):
         self.status_rx_fd = os.open(fifo_path2, os.O_RDWR)
         self.task_tx_fd = os.open(fifo_path3, os.O_RDWR)
 
+    def get_performance_data(self):
+        print("waiting for data")
+
+        data = os.read(self.length_rx_fd, 8)
+
+        length = int().from_bytes(data,byteorder='little')
+        # os.write(signal_fd,b'1')
+        # data = s.recv(length)
+        data = os.read(self.status_rx_fd, length)
+        print('Received data len:', length)
+        # Deserialize JSON data
+        print(data)
+
+        return json.loads(data.decode('utf-8'))
+
     def update_cores(self, status_data):
         for core_idx in range(4):
             core_status_data = status_data['performance_counters'][f'core{core_idx}']
@@ -100,8 +116,8 @@ class CPU(Tick):
         os.write(self.task_tx_fd, byte_array)
 
     def get_execution_status(self):
-        status_data = self.fake_generator.gen_status()
-        # todo: get data from C
+        # Get data
+        status_data = self.get_performance_data()
 
         # Update cores and tasks
         self.update_cores(status_data)
