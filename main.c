@@ -6,6 +6,7 @@
 #include "C/threads/init.h"
 #include "Test/perf_count.h"
 #include "Test/task_times.h"
+#include "Test/kernel_power/kernel_power_measurement.h"
 
 
 pthread_cond_t tick_cond = PTHREAD_COND_INITIALIZER;
@@ -30,9 +31,11 @@ char g_buffer[2048] = {'\0'};
 
 int main(){
 
-    init();
+//    init();
 
-//    tasks_time();
+    tasks_time();
+
+//    measure_kernel_power();
 
     return 0;
 }

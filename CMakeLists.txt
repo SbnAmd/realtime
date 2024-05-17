@@ -48,6 +48,8 @@ add_executable(realtime
         Test/perf_count.c
         Test/task_times.h
         Test/task_times.c
+        Test/kernel_power/kernel_power_measurement.h
+        Test/kernel_power/kernel_power_measurement.c
 )
 add_link_options("-pthread")
 target_link_libraries(realtime PRIVATE m sensors cjson)
