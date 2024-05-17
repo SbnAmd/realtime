@@ -40,6 +40,10 @@
 #define MAX_LENGTH 256
 #define CYCLES_TO_RUN 10
 
+#define TASK_COUNT   13
+
+#define TEST_TASK_DURATION
+
 
 #define DEBUG
 

@@ -19,52 +19,85 @@ extern int stop_flag;
 extern pthread_cond_t tick_cond;
 extern pthread_mutex_t tick_mtx;
 extern pthread_cond_t manage_to_core_CVes[NUM_CORES];
-void (*task_list[7])(int)={&idle, &my_func1, &my_func2, &my_func3, &my_func4, &my_func5, &my_func6};
 extern int kill_flag;
-
-void task(FunctionPtr real_task, int core_idx, char *name){
-
-        struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
-        strcpy(perf_event->name, name);
-
-//    real_task();
-        run_task_and_get_perf_event(real_task, perf_event, core_idx+CORE_BASE);
-
-}
-
-void my_func1(int core_idx){
-    static char name[] = {"Qsort-Large"};
-    task(qsort_large, core_idx, name);
-}
-
-void my_func2(int core_idx){
-    static char name[] = {"Qsort-Small"};
-    task(qsort_small ,core_idx, name);
-}
-
-void my_func3(int core_idx){
-    static char name[] = {"Bitcounts-Large"};
-    task(bitcnts_large ,core_idx, name);
-}
-
-void my_func4(int core_idx){
-static char name[] = {"Bitcounts-Small"};
-    task(bitcnts_small ,core_idx, name);
-}
-
-void my_func5(int core_idx){
-    static char name[] = {"Basicmath-Large"};
-    task(basicmath_large ,core_idx, name);
-}
-
-void my_func6(int core_idx){
-    static char name[] = {"Basicmath-Small"};
-    task(basicmath_small    ,core_idx, name);
-}
 
 void idle(){
     usleep(PERIOD);
 }
+
+void QsortLargeTask(int core_idx){
+    static char name[] = {"QsortLargeTask"};
+    task(qsort_large, core_idx, name);
+}
+
+void QsortSmallTask(int core_idx){
+    static char name[] = {"QsortSmallTask"};
+    task(qsort_small ,core_idx, name);
+}
+
+void BitCountLargeTask(int core_idx){
+    static char name[] = {"BitCountLargeTask"};
+    task(bitcnts_large ,core_idx, name);
+}
+
+void BitCountSmallTask(int core_idx){
+    static char name[] = {"BitCountSmallTask"};
+    task(bitcnts_small ,core_idx, name);
+}
+
+void BasicMathLargeTask(int core_idx){
+    static char name[] = {"BasicMathLargeTask"};
+    task(basicmath_large ,core_idx, name);
+}
+
+void BasicMathSmallTask(int core_idx){
+    static char name[] = {"BasicMathSmallTask"};
+    task(basicmath_small    ,core_idx, name);
+}
+
+void StringSearchLargeTask(int core_idx){
+    static char name[] = {"StringSearchLargeTask"};
+    task(string_search_large, core_idx, name);
+}
+
+void StringSearchSmallTask(int core_idx){
+    static char name[] = {"StringSearchSmallTak"};
+    task(string_search_small, core_idx, name);
+}
+
+void FFTLargeTask(int core_idx){
+    static char name[] = {"FFTLargeTask"};
+    task(fft_large, core_idx, name);
+}
+
+void FFTSmallTask(int core_idx){
+    static char name[] = {"FFTSmallTask"};
+    task(fft_small, core_idx, name);
+}
+
+void CRCLargeTask(int core_idx){
+    static char name[] = {"CRCLargeTask"};
+    task(crc_large, core_idx, name);
+}
+
+void CRCSmallTask(int core_idx){
+    static char name[] = {"CRCSmallTask"};
+    task(crc_small, core_idx, name);
+}
+
+void (*task_list[TASK_COUNT])(int)={&idle, &QsortLargeTask, &QsortSmallTask,
+                           &BitCountLargeTask, &BitCountSmallTask, &BasicMathLargeTask,
+                           &BasicMathSmallTask, &StringSearchLargeTask, &StringSearchSmallTask,
+                           &FFTLargeTask, &FFTSmallTask, &CRCLargeTask, &CRCSmallTask
+                           };
+
+
+void task(FunctionPtr real_task, int core_idx, char *name){
+        struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
+        strcpy(perf_event->name, name);
+        run_task_and_get_perf_event(real_task, perf_event, core_idx+CORE_BASE);
+}
+
 
 void* worker(void* arg) {
 

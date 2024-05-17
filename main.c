@@ -6,6 +6,7 @@
 #include "C/threads/init.h"
 #include "Test/perf_count.h"
 #include "Test/task_times.h"
+#include "Test/task_duration/task_duration.h"
 #include "Test/kernel_power/kernel_power_measurement.h"
 
 
@@ -17,10 +18,13 @@ pthread_cond_t manage_to_core_CVes[NUM_CORES] = {PTHREAD_COND_INITIALIZER};
 pthread_mutex_t core_mutexes[NUM_CORES] = {PTHREAD_MUTEX_INITIALIZER};
 
 int new_task_IDes[NUM_CORES] = {0};
+
 //Used to notify each core that new task has been assigned
 int new_task_stat[NUM_CORES] = {NO_TASK, NO_TASK, NO_TASK, NO_TASK};
+
 //Used to keep core status (Running or Idle)
 int core_status[NUM_CORES]={IDLE, IDLE, IDLE, IDLE};
+
 int core_IDes[NUM_CORES];
 
 struct PerformanceEvents perf_event_array[NUM_CORES] = {0};
@@ -34,11 +38,16 @@ char g_buffer[2048] = {'\0'};
 
 int main(){
 
-    init();
+#ifdef TEST_TASK_DURATION
+    check_tasks_duration();
+#endif
+
+//    init();
 
 //    tasks_time();
 
 //    measure_kernel_power();
+
 
     return 0;
 }

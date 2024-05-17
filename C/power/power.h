@@ -7,7 +7,7 @@
 
 
 #include "C/realtime.h"
-#include "C/tasks/tasks.h"
+#include "C/tasks/benchmark_tasks.h"
 #define MAX_BUF_SIZE 256
 
 #define RAPL_PATH "/sys/class/powercap/intel-rapl:0/intel-rapl:0:0/energy_uj"

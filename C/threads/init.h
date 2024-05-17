@@ -8,7 +8,7 @@
 
 
 #include "C/realtime.h"
-#include "C/tasks/tasks.h"
+#include "C/tasks/benchmark_tasks.h"
 #include "C/performance_counter/performance_counter.h"
 #include "C/power/power.h"
 #include "C/temperature/tempertature.h"
