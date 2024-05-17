@@ -7,6 +7,7 @@
 extern pthread_mutex_t server_mtx;
 extern pthread_cond_t server_cond;
 extern pthread_mutex_t core_mutexes[NUM_CORES];
+//Used to keep core status (Running or Idle)
 extern int core_status[NUM_CORES];
 extern float temperatures[TOTAL_CORES];
 extern double power;
@@ -37,12 +38,20 @@ void dispatch_tasks(int* status, int* new_tasks){
 
     for(int i = 0; i < NUM_CORES; i++) {
         if (status[i] == IDLE && new_tasks[i] != -1) {
-            LOCK(&core_mutexes[i]);
+            if(new_tasks[i] > 0){
+                LOCK(&core_mutexes[i]);
 
-            new_task_IDes[i] = new_tasks[i];
-            new_task_stat[i] = 1;
-            pthread_cond_signal(&manage_to_core_CVes[i]);
-            UNLOCK(&core_mutexes[i]);
+                new_task_IDes[i] = new_tasks[i];
+                new_task_stat[i] = NEW_TASK;
+                pthread_cond_signal(&manage_to_core_CVes[i]);
+                UNLOCK(&core_mutexes[i]);
+            }else{
+                LOCK(&core_mutexes[i]);
+                new_task_stat[i] = NO_TASK;
+                pthread_cond_signal(&manage_to_core_CVes[i]);
+                UNLOCK(&core_mutexes[i]);
+            }
+
         }
     }
 }

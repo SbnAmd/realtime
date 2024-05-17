@@ -1,4 +1,5 @@
 from enum import Enum
+from colorama import Fore
 from Python.Class.tick import Tick
 from Python.Class.performance_counter import PerformanceCounter as PerfCount
 
@@ -48,14 +49,24 @@ class Task(Tick):
     def get_status(self):
         return self.status
 
+    def get_status_str(self):
+        if self.status == TaskStatus.INACTIVE:
+            return "INACTIVE"
+        elif self.status == TaskStatus.ACTIVE:
+            return "ACTIVE"
+        elif self.status == TaskStatus.RUNNING:
+            return "RUNNING"
+
     def check_deadline(self):
         if self.get_tick() % self.period == 0 and self.get_tick() != 0:
             if self.status is not TaskStatus.INACTIVE:
                 self.missed_deadlines.append(self.get_tick())
+                print(Fore.WHITE + f'Task {self.task_name} missed deadline')
 
     def check_activation(self):
         if self.get_tick() % self.period == 0 and self.status == TaskStatus.INACTIVE:
             self.set_status(TaskStatus.ACTIVE)
+            print(Fore.WHITE + f'Task {self.task_name} activated at {self.get_tick()}')
 
     def update_status(self, status, temp: float):
 
@@ -68,6 +79,7 @@ class Task(Tick):
             # Transition just from running to inactive
             if status['status'] == 0 and self.status == TaskStatus.RUNNING:
                 self.set_status(TaskStatus.INACTIVE)
+                print(Fore.WHITE + f'Task {self.task_name} inactivated')
 
         self.check_activation()
 

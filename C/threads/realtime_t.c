@@ -75,7 +75,7 @@ void* worker(void* arg) {
     // Wait until get first schedule
     LOCK(&core_mutexes[core_idx]);
     core_status[core_idx] = IDLE;
-    while (new_task_stat[core_idx] == 0)
+    while (new_task_stat[core_idx] == NO_TASK)
         pthread_cond_wait(&manage_to_core_CVes[core_idx], &core_mutexes[core_idx]);
     UNLOCK(&core_mutexes[core_idx]);
 
@@ -86,8 +86,8 @@ void* worker(void* arg) {
 
         LOCK(&core_mutexes[core_idx]);
         task_idx = new_task_IDes[core_idx];
-        new_task_stat[core_idx] = 0;
-        if(task_idx == 0){
+        new_task_stat[core_idx] = NO_TASK;
+        if(task_idx <= 0){
             core_status[core_idx] = IDLE;
         } else{
             core_status[core_idx] = RUNNING;
@@ -104,7 +104,7 @@ void* worker(void* arg) {
 
         // Wait until tick and next schedule
         LOCK(&core_mutexes[core_idx]);
-        while (new_task_stat[core_idx] == 0)
+        while (new_task_stat[core_idx] == NO_TASK)
             pthread_cond_wait(&manage_to_core_CVes[core_idx], &core_mutexes[core_idx]);
         UNLOCK(&core_mutexes[core_idx]);
 

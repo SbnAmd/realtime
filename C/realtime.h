@@ -25,14 +25,18 @@
 #include <fcntl.h>
 
 
+#define IDLE 0
+#define RUNNING 1
 
+#define NO_TASK 0
+#define NEW_TASK 1
 
 #define NUM_CORES 4
 #define TOTAL_CORES 16
 #define CORE_BASE  8
-#define RUNNING 1
+
 #define PERIOD 20000
-#define IDLE 0
+
 #define MAX_LENGTH 256
 #define CYCLES_TO_RUN 10
 

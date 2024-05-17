@@ -163,12 +163,12 @@ class CPU(Tick):
             self.cores[core].tick()
         for task in self.task_list:
             task.tick()
-            return schedule_data
+        return schedule_data
 
     def run_frequency_scaling(self):
         pass
 
-    def inform(self, status_data, schedule_data):
+    def inform(self, status_data, schedule_data, T):
         stat_list = []
         task_name_list = []
         for core_idx in range(4):
@@ -186,9 +186,13 @@ class CPU(Tick):
                         task_name_list.append(task_name)
                         break
         print(Fore.GREEN + f'scheduled tasks:\n \tcore0 --> {task_name_list[0]}, \n\tcore1 --> {task_name_list[1]}, \n\tcore2 --> {task_name_list[2]}, \n\tcore3 --> {task_name_list[3]}')
-        print(Fore.MAGENTA + "******************************")
+        print(Fore.CYAN + f'Tasks status:')
+        for task in self.task_list:
+            print(Fore.CYAN + f'\t{task.get_task_name()}: {task.get_status_str()}')
+        print(Fore.MAGENTA + f'*************** T = {T} ***************')
 
     def run(self):
+        T = 0;
         while True:
             status_data = self.get_execution_status()
             if self.check_free_cores():
@@ -196,4 +200,5 @@ class CPU(Tick):
                 self.map_to_core()
             schedule_data = self.execute()
 
-            self.inform(status_data, schedule_data)
+            self.inform(status_data, schedule_data, T)
+            T += 1
