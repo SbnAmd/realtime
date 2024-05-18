@@ -14,6 +14,7 @@ task_names = [
     "CRCSmallTask",
 ]
 
+
 task_IDes = {
     "QsortLargeTask": 1,
     "QsortSmallTask": 2,
@@ -32,32 +33,32 @@ task_IDes = {
 
 tasks = [
     {'name': "QsortLargeTask",
-     'period': 5,
-     'execution_time': 2
+     'period': 10,
+     'execution_time': 3
      },
 
     {'name': "QsortSmallTask",
-     'period': 3,
+     'period': 8,
      'execution_time': 1
      },
 
     {'name': "BitCountLargeTask",
-     'period': 9,
-     'execution_time': 7
+     'period': 30,
+     'execution_time': 21
      },
 
     {'name': "BitCountSmallTask",
-     'period': 4,
-     'execution_time': 1
+     'period': 9,
+     'execution_time': 2
      },
 
     {'name': "BasicMathLargeTask",
      'period': 7,
-     'execution_time': 1
+     'execution_time': 2
      },
 
     {'name': "BasicMathSmallTask",
-     'period': 3,
+     'period': 6,
      'execution_time': 1
      },
 
@@ -67,28 +68,28 @@ tasks = [
      },
 
     {'name': "StringSearchSmallTask",
-     'period': 3,
+     'period': 4,
      'execution_time': 1
      },
 
     {'name': "FFTLargeTask",
-     'period': 3,
-     'execution_time': 1
+     'period': 10,
+     'execution_time': 2
      },
 
     {'name': "FFTSmallTask",
-     'period': 3,
+     'period': 5,
      'execution_time': 1
      },
 
     {'name': "CRCLargeTask",
-     'period': 3,
-     'execution_time': 1
+     'period': 70,
+     'execution_time': 55
      },
 
     {'name': "CRCSmallTask",
-     'period': 3,
-     'execution_time': 1
+     'period': 9,
+     'execution_time': 3
      },
 
 ]

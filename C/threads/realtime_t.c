@@ -61,7 +61,7 @@ void StringSearchLargeTask(int core_idx){
 }
 
 void StringSearchSmallTask(int core_idx){
-    static char name[] = {"StringSearchSmallTak"};
+    static char name[] = {"StringSearchSmallTask"};
     task(string_search_small, core_idx, name);
 }
 
@@ -95,7 +95,13 @@ void (*task_list[TASK_COUNT])(int)={&idle, &QsortLargeTask, &QsortSmallTask,
 void task(FunctionPtr real_task, int core_idx, char *name){
         struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
         strcpy(perf_event->name, name);
+#ifdef DEBUG
+    printf("\t--->[%s started on core %d]\n", name, core_idx);
+#endif
         run_task_and_get_perf_event(real_task, perf_event, core_idx+CORE_BASE);
+#ifdef DEBUG
+        printf("\t--->[%s finished on core %d]\n", name, core_idx);
+#endif
 }
 
 

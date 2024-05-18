@@ -23,12 +23,19 @@ extern pthread_cond_t manage_to_core_CVes[NUM_CORES];
 extern int kill_flag;
 
 void copy_cores_status(int* status){
-
+    printf("Core status : \n");
     for(int i = 0; i < NUM_CORES; i++){
 
         // Copying core statuses
         LOCK(&core_mutexes[i]);
         status[i] = core_status[i];
+#ifdef DEBUG
+        if(status[i] == IDLE){
+            printf("\tCore[%d] is IDLE\n",i);
+        }else{
+            printf("\tCore[%d] is RUNNING\n",i);
+        }
+#endif
         UNLOCK(&core_mutexes[i]);
     }
 
@@ -67,6 +74,9 @@ void* manager(void* arg){
 
     while (kill_flag == 0){
 
+        // wait until tick signal
+        WAIT_ON_LOCK(&tick_mtx, &tick_cond);
+
         // Copy cores status (IDLE or RUNNING) to local var
         copy_cores_status(status);
 
@@ -92,8 +102,7 @@ void* manager(void* arg){
         // Dispatch tasks
         dispatch_tasks(status, new_tasks);
 
-        // wait until tick signal
-        WAIT_ON_LOCK(&tick_mtx, &tick_cond);
+
 
         if(stop_flag == 1){
             kill_flag = 1;

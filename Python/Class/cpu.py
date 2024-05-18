@@ -2,7 +2,7 @@ from enum import Enum
 from Python.Class.cpu_core import Core, CoreStatus
 from Python.Class.task import Task, TaskStatus
 from Python.Class.tick import Tick
-from Python.Class.globals import task_IDes
+from Python.Class.globals import task_IDes, tasks
 import json
 from colorama import Fore
 # from Test.status_generator import StatusGenerator
@@ -34,9 +34,10 @@ class CPU(Tick):
         # Scheduling
         self.next_tasks = None
         self.task_map = None
-        self.free_cores = dict()
+        self.free_cores = 0
 
         # Init
+        self.check_schedubility()
         self.init_tasks(tasks)
         self.init_cores()
         self.init_scheduler(scheduler)
@@ -48,13 +49,18 @@ class CPU(Tick):
         self.task_tx_fd = None
         self.init_pipes()
 
-        # todo: for test
-        # self.fake_generator = StatusGenerator()
-
     def __del__(self):
         os.close(self.length_rx_fd)
         os.close(self.status_rx_fd)
         os.close(self.task_tx_fd)
+
+    def check_schedubility(self):
+        ut = 0.0
+        for t in tasks:
+            ut += (t['execution_time']/t['period'])
+        if ut > self.core_count:
+            print("This tasks are not scheduable")
+            exit(1)
 
     def init_cores(self):
         for idx in range(self.core_count):
@@ -109,6 +115,7 @@ class CPU(Tick):
             for core_idx in range(4):
                 core_data = status_data['performance_counters'][f'core{core_idx}']
                 if task_name == core_data['name']:
+                    print(f'recev name - > {core_data["name"]}')
                     task.update_status(core_data, status_data['temperatures'][f'core{core_idx + 8}'])
                     break
             else:  # If no matching task name is found
@@ -132,7 +139,7 @@ class CPU(Tick):
         return status_data
 
     def schedule(self):
-        self.scheduler.schedule(self.cores, self.free_cores, self)
+        self.scheduler.schedule(self.cores, self)
 
     def map_to_core(self):
         # New tasks are mapped to cores
@@ -141,6 +148,10 @@ class CPU(Tick):
 
     def execute(self):
         schedule_data = {}
+        for core_id in ['0', '1', '2', '3']:
+            if self.cores[core_id].is_free():
+                self.free_cores += 1
+        print(Fore.RED + f'Free cores = {self.free_cores}')
         for core_id in ['0', '1', '2', '3']:
             if core_id in self.task_map:
                 task_code = self.task_map.get(core_id, '0')
@@ -152,9 +163,11 @@ class CPU(Tick):
                 for task in self.task_list:
                     if task.get_task_name() == self.task_map[core_id]:
                         task.set_status(TaskStatus.RUNNING)
+                        self.free_cores -= 1
             else:
                 schedule_data[f'core{core_id}'] = -1
 
+        print(Fore.RED + f'Free cores after schedule= {self.free_cores}')
         self.send_new_schedule(schedule_data)
         self.task_map = {}
 

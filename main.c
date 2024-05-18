@@ -42,10 +42,10 @@ int main(){
     check_tasks_duration();
 #endif
 
-//    init();
+    init();
 
 //    tasks_time();
-
+//
 //    measure_kernel_power();
 
 

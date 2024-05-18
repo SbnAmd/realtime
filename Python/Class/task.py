@@ -77,6 +77,7 @@ class Task(Tick):
             self.add_to_timeline(self.create_time_slice(status, temp))
 
             # Transition just from running to inactive
+
             if status['status'] == 0 and self.status == TaskStatus.RUNNING:
                 self.set_status(TaskStatus.INACTIVE)
                 print(Fore.WHITE + f'Task {self.task_name} inactivated')

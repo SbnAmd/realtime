@@ -52,9 +52,9 @@ void* shared_mem_worker() {
 
         length = strlen(g_buffer);
         write(data_fd, g_buffer, length);
-#ifdef DEBUG
-        printf("sending status\n");
-#endif
+//#ifdef DEBUG
+//        printf("sending status\n");
+//#endif
         write(data_len_fifo_fd, &length, sizeof(size_t));
 
         // Clear buffer
@@ -67,15 +67,15 @@ void* shared_mem_worker() {
             perror("read");
             exit(EXIT_FAILURE);
         }
-#ifdef DEBUG
-        printf("received new schedule\n");
-#endif
+//#ifdef DEBUG
+//        printf("received new schedule\n");
+//#endif
 
-#ifdef DEBUG
-        clock_gettime(CLOCK_MONOTONIC, &end);
-        elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-        printf("shared mem transfer time : %f\n",elapsed_ns / 1000000.0); // Elapsed time in milliseconds
-#endif
+//#ifdef DEBUG
+//        clock_gettime(CLOCK_MONOTONIC, &end);
+//        elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
+//        printf("shared mem transfer time : %f\n",elapsed_ns / 1000000.0); // Elapsed time in milliseconds
+//#endif
         pthread_cond_signal(&server_cond);
 
         if(pthread_mutex_unlock(&server_mtx) != 0){

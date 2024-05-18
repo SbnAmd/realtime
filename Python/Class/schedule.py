@@ -24,14 +24,11 @@ class Scheduler:
             owner.next_tasks.append(task_name)
             cnt += 1
 
-    def schedule(self, cores, free_cores, owner):
+    def schedule(self, cores, owner):
         _free_cores = 0
         for core in cores:
             if cores[core].is_free():
                 _free_cores += 1
-                free_cores[core] = True
-            else:
-                free_cores[core] = False
 
         self.get_high_priority_tasks(_free_cores, owner)
 
