@@ -25,9 +25,10 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     struct perf_event_attr cpu_page_faults_pe, cpu_context_switches_pe, cpu_migrations_pe;
 
     struct timespec start, end;
-    long elapsed_ns;
+    struct timespec task_start, task_end;
+    long task_duration_ns, total_ns, elapsed_ns;
 
-
+    clock_gettime(CLOCK_MONOTONIC, &start);
 
     // CPU CYCLES
     memset(&cpu_cycles_pe, 0, sizeof(struct perf_event_attr));
@@ -200,11 +201,11 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     ioctl(cpu_migrations_fd, PERF_EVENT_IOC_ENABLE, 0);
 
     // Run task
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    clock_gettime(CLOCK_MONOTONIC, &task_start);
 
     task();
 
-    clock_gettime(CLOCK_MONOTONIC, &end);
+    clock_gettime(CLOCK_MONOTONIC, &task_end);
 
     // Disable events
     ioctl(cpu_cycles_fd, PERF_EVENT_IOC_DISABLE, 0);
@@ -242,6 +243,7 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
     perf_event->duration = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
 
+
     close(cpu_cycles_fd);
     close(cpu_instructions_fd);
     close(cpu_cache_misses_fd);
@@ -251,8 +253,10 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     close(cpu_page_faults_fd);
     close(cpu_context_switches_fd);
     close(cpu_migrations_fd);
-
-
+//    clock_gettime(CLOCK_MONOTONIC, &end);
+//    total_ns = (end.tv_sec-start.tv_sec) * 1000000000 + (end.tv_nsec-start.tv_nsec);
+//    task_duration_ns = (task_end.tv_sec-task_start.tv_sec) * 1000000000 + (task_end.tv_nsec-task_start.tv_nsec);
+//    printf("IOCTL duration = %f, task duration = %f\n", (total_ns- task_duration_ns)/1000000.0, task_duration_ns/1000000.0);
 }
 
 void* performance_worker(){

@@ -1,4 +1,4 @@
-
+from colorama import Fore
 from Python.Class.task import Task, TaskStatus
 
 
@@ -15,6 +15,10 @@ class Scheduler:
                     deadline = (int(owner.get_tick()/task.period) + 1)*task.period - owner.get_tick()
                     deadline_dict[task.get_task_name()] = deadline
             deadline_dict = {k: v for k, v in sorted(deadline_dict.items(), key=lambda item: item[1])}
+            print(Fore.LIGHTCYAN_EX + "New deadlines:")
+            for k in deadline_dict:
+                print(f'{k} deadline = {deadline_dict[k]}')
+
 
         cnt = 0
         owner.next_tasks = []

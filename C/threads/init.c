@@ -72,6 +72,7 @@ void init(){
     init_threads();
 
     // Run for 1000 cycles
+    usleep(PRELOAD_DELAY);
     usleep(CYCLES_TO_RUN*PERIOD);
     stop_flag = 1;
 

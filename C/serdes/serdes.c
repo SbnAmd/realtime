@@ -108,9 +108,9 @@ void serialize(struct PerformanceEvents *events, char *buffer,
 
 void deserialize(int* tasks, char* buffer){
 
-#ifdef DEBUG
-    printf("schedule data size = %lu\n", strlen(buffer));
-#endif
+//#ifdef DEBUG
+//    printf("schedule data size = %lu\n", strlen(buffer));
+//#endif
     cJSON *json = cJSON_Parse(buffer);
     if (json == NULL) {
         const char *error_ptr = cJSON_GetErrorPtr();

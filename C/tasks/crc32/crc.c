@@ -186,7 +186,7 @@ void crc_(int argc, char *argv[])
 }
 
 void crc_large(){
-    char path[] = {"/home/sbn/Desktop/realtime/C/tasks/crc32/large.pcm"};
+    char path[] = {"/home/sbn/Desktop/realtime/C/tasks/crc32/med.pcm"};
     crc_(2, (char **) &path);
 }
 

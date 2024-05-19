@@ -32,64 +32,64 @@ task_IDes = {
 
 
 tasks = [
-    {'name': "QsortLargeTask",
-     'period': 10,
-     'execution_time': 3
-     },
+    # {'name': "QsortLargeTask",
+    #  'period': 2,
+    #  'execution_time': 1
+    #  },
 
     {'name': "QsortSmallTask",
-     'period': 8,
-     'execution_time': 1
-     },
-
-    {'name': "BitCountLargeTask",
-     'period': 30,
-     'execution_time': 21
-     },
-
-    {'name': "BitCountSmallTask",
-     'period': 9,
-     'execution_time': 2
-     },
-
-    {'name': "BasicMathLargeTask",
-     'period': 7,
-     'execution_time': 2
-     },
-
-    {'name': "BasicMathSmallTask",
-     'period': 6,
-     'execution_time': 1
-     },
-
-    {'name': "StringSearchLargeTask",
-     'period': 3,
-     'execution_time': 1
-     },
-
-    {'name': "StringSearchSmallTask",
      'period': 4,
      'execution_time': 1
      },
 
-    {'name': "FFTLargeTask",
-     'period': 10,
-     'execution_time': 2
-     },
+    # {'name': "BitCountLargeTask",
+    #  'period': 3,
+    #  'execution_time': 7
+    #  },
 
-    {'name': "FFTSmallTask",
-     'period': 5,
+    {'name': "BitCountSmallTask",
+     'period': 6,
      'execution_time': 1
      },
 
-    {'name': "CRCLargeTask",
-     'period': 70,
-     'execution_time': 55
+    {'name': "BasicMathLargeTask",
+     'period': 4,
+     'execution_time': 1
      },
 
+    {'name': "BasicMathSmallTask",
+     'period': 3,
+     'execution_time': 1
+     },
+
+    {'name': "StringSearchLargeTask",
+     'period': 2,
+     'execution_time': 1
+     },
+
+    {'name': "StringSearchSmallTask",
+     'period': 3,
+     'execution_time': 1
+     },
+
+    {'name': "FFTLargeTask",
+     'period': 12,
+     'execution_time': 1
+     },
+
+    {'name': "FFTSmallTask",
+     'period': 3,
+     'execution_time': 1
+     },
+
+    # {'name': "CRCLargeTask",
+    #  'period': 11,
+    #  'execution_time': 6
+    #  },
+
     {'name': "CRCSmallTask",
-     'period': 9,
-     'execution_time': 3
+     'period': 6,
+     'execution_time': 1
      },
 
 ]

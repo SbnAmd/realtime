@@ -21,6 +21,7 @@ extern pthread_cond_t tick_cond;
 extern pthread_mutex_t tick_mtx;
 extern pthread_cond_t manage_to_core_CVes[NUM_CORES];
 extern int kill_flag;
+extern struct timespec start;
 
 void copy_cores_status(int* status){
     printf("Core status : \n");
@@ -65,12 +66,19 @@ void dispatch_tasks(int* status, int* new_tasks){
 
 
 void* manager(void* arg){
-
+    int bool = 0;
     int status[NUM_CORES];
-    int new_tasks[NUM_CORES];
+    int new_tasks[NUM_CORES] = {1, 2, 3,4};
 
-    // Wait for first schedule
+#ifdef DEBUG
+    struct timespec lend, lstart;
+    long elapsed_ns;
+#endif
+
+
+    // Wait for communication to get ready
     WAIT_ON_LOCK(&server_mtx, &server_cond);
+
 
     while (kill_flag == 0){
 
@@ -79,10 +87,14 @@ void* manager(void* arg){
 
         // Copy cores status (IDLE or RUNNING) to local var
         copy_cores_status(status);
-
+        clock_gettime(CLOCK_MONOTONIC, &lstart);
         // Get each core's temp
         get_core_temperatures(temperatures);
-
+#ifdef DEBUG
+        clock_gettime(CLOCK_MONOTONIC, &lend);
+        elapsed_ns = (lend.tv_sec-lstart.tv_sec) * 1000000000 + (lend.tv_nsec-lstart.tv_nsec);
+        printf("manager took %f \n", elapsed_ns / 1000000.0);
+#endif
         // Get total cpu power and energy
         get_power_and_energy(&power, &energy_uj);
 
@@ -95,8 +107,13 @@ void* manager(void* arg){
         // Wait until new schedule
         WAIT_ON_LOCK(&server_mtx, &server_cond);
 
+
         // Deserialize
         deserialize(new_tasks, g_buffer);
+        if(bool==0){
+            clock_gettime(CLOCK_MONOTONIC, &start);
+            bool=1;
+        }
 
 
         // Dispatch tasks

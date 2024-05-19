@@ -37,8 +37,10 @@
 
 #define PERIOD 20000
 
+#define PRELOAD_DELAY  800000
+
 #define MAX_LENGTH 256
-#define CYCLES_TO_RUN 10
+#define CYCLES_TO_RUN 30
 
 #define TASK_COUNT   13
 

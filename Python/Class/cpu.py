@@ -36,6 +36,10 @@ class CPU(Tick):
         self.task_map = None
         self.free_cores = 0
 
+        self.length_rx_fd = None
+        self.status_rx_fd = None
+        self.task_tx_fd = None
+
         # Init
         self.check_schedubility()
         self.init_tasks(tasks)
@@ -44,22 +48,20 @@ class CPU(Tick):
         self.init_mapper(mapper)
 
         # Communication with C code
-        self.length_rx_fd = None
-        self.status_rx_fd = None
-        self.task_tx_fd = None
         self.init_pipes()
 
     def __del__(self):
-        os.close(self.length_rx_fd)
-        os.close(self.status_rx_fd)
-        os.close(self.task_tx_fd)
+        if self.length_rx_fd is not None:
+            os.close(self.length_rx_fd)
+            os.close(self.status_rx_fd)
+            os.close(self.task_tx_fd)
 
     def check_schedubility(self):
         ut = 0.0
         for t in tasks:
             ut += (t['execution_time']/t['period'])
         if ut > self.core_count:
-            print("This tasks are not scheduable")
+            print(f'Ths tasks are not scheduable, utilizatoin = {ut}')
             exit(1)
 
     def init_cores(self):
