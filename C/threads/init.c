@@ -11,8 +11,8 @@ extern int stop_flag;
 extern int kill_flag;
 
 struct sched_param params;
-pthread_attr_t attrs[NUM_CORES], tick_attr, manager_attr, shared_mem_thread_attr;
-pthread_t threads[NUM_CORES], tick_thread, manager_thread, shared_mem_thread;
+pthread_attr_t attrs[NUM_CORES], tick_attr, manager_attr, shared_mem_thread_attr, temperature_attr;
+pthread_t threads[NUM_CORES], tick_thread, manager_thread, shared_mem_thread, temperature_thread;
 
 
 void init_threads(){
@@ -24,6 +24,9 @@ void init_threads(){
     for(int i = 0; i < NUM_CORES; i++){
         assign_task_to_core(&params, &attrs[i], &threads[i], i + CORE_BASE, worker, &core_IDes[i]);
     }
+
+    // Create manager thread on core 15
+    assign_task_to_core(&params, &temperature_attr, &temperature_thread, 12, temperature_worker, NULL);
 
     // Create manager thread on core 15
     assign_task_to_core(&params, &manager_attr, &manager_thread, 15, manager, NULL);
@@ -52,6 +55,9 @@ void release_threads(){
     }
     pthread_join(shared_mem_thread, NULL);
     pthread_attr_destroy(&shared_mem_thread_attr);
+
+    pthread_join(temperature_thread, NULL);
+    pthread_attr_destroy(&temperature_attr);
 
     // Release realtime cores thread
     for(int i = 0; i < NUM_CORES; i++){

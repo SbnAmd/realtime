@@ -6,7 +6,9 @@
 
 extern pthread_mutex_t server_mtx;
 extern pthread_cond_t server_cond;
+
 extern pthread_mutex_t core_mutexes[NUM_CORES];
+extern pthread_mutex_t temperature_mtx;
 //Used to keep core status (Running or Idle)
 extern int core_status[NUM_CORES];
 extern float temperatures[TOTAL_CORES];
@@ -87,16 +89,11 @@ void* manager(void* arg){
 
         // Copy cores status (IDLE or RUNNING) to local var
         copy_cores_status(status);
-        clock_gettime(CLOCK_MONOTONIC, &lstart);
-        // Get each core's temp
-        get_core_temperatures(temperatures);
-#ifdef DEBUG
-        clock_gettime(CLOCK_MONOTONIC, &lend);
-        elapsed_ns = (lend.tv_sec-lstart.tv_sec) * 1000000000 + (lend.tv_nsec-lstart.tv_nsec);
-        printf("manager took %f \n", elapsed_ns / 1000000.0);
-#endif
+
+        LOCK(&temperature_mtx);
         // Get total cpu power and energy
         get_power_and_energy(&power, &energy_uj);
+        UNLOCK(&temperature_mtx);
 
         // Serialize and send data to python scheduler
         serialize(perf_event_array, g_buffer, NUM_CORES, &power, &energy_uj, temperatures, status);

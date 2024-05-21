@@ -26,8 +26,8 @@ add_executable(realtime
         C/performance_counter/performance_counter.c
         C/power/power.h
         C/power/power.c
-        C/temperature/tempertature.h
-        C/temperature/tempertature.c
+#        C/temperature/tempertature.h
+#        C/temperature/tempertature.c
         C/realtime.h
         C/serdes/serdes.c
         C/serdes/serdes.h
@@ -73,6 +73,8 @@ add_executable(realtime
         Test/task_duration/task_duration.c
         Test/task_duration/task_duration.h
         C/tasks/sniptype.h
+        C/threads/temperature.c
+        C/threads/temperature.h
 )
 add_link_options("-pthread")
 target_link_libraries(realtime PRIVATE m sensors cjson)

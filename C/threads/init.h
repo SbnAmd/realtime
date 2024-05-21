@@ -19,6 +19,7 @@
 #include "C/threads/manager.h"
 #include "C/threads/realtime_t.h"
 #include "C/threads/tick.h"
+#include "C/threads/temperature.h"
 
 
 

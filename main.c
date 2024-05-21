@@ -12,8 +12,10 @@
 
 pthread_cond_t tick_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t server_cond = PTHREAD_COND_INITIALIZER;
+pthread_cond_t temperature_cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t tick_mtx = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t server_mtx = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t temperature_mtx = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t manage_to_core_CVes[NUM_CORES] = {PTHREAD_COND_INITIALIZER};
 pthread_mutex_t core_mutexes[NUM_CORES] = {PTHREAD_MUTEX_INITIALIZER};
 
