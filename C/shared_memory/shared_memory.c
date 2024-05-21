@@ -52,9 +52,7 @@ void* shared_mem_worker() {
 
         length = strlen(g_buffer);
         write(data_fd, g_buffer, length);
-//#ifdef DEBUG
-//        printf("sending status\n");
-//#endif
+
         write(data_len_fifo_fd, &length, sizeof(size_t));
 
         // Clear buffer

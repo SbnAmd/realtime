@@ -12,7 +12,7 @@ class Scheduler:
         if n > 0:
             for task in owner.task_list:
                 if task.get_status() == TaskStatus.ACTIVE:
-                    deadline = (int(owner.get_tick()/task.period) + 1)*task.period - owner.get_tick()
+                    deadline = (int(task.get_tick()/task.period) + 1)*task.period - task.get_tick()
                     deadline_dict[task.get_task_name()] = deadline
             deadline_dict = {k: v for k, v in sorted(deadline_dict.items(), key=lambda item: item[1])}
             print(Fore.LIGHTCYAN_EX + "New deadlines:")
