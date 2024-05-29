@@ -43,7 +43,10 @@ long elapsed_ns;
 int main(){
 
 #ifdef TEST_TASK_DURATION
-    check_tasks_duration();
+//    while (1){
+//        check_tasks_duration();
+//    }
+
 #endif
 
     init();

@@ -33,7 +33,7 @@
 
 #define NUM_CORES 4
 #define TOTAL_CORES 16
-#define CORE_BASE  8
+#define CORE_BASE  4
 
 #define PERIOD 20000
 

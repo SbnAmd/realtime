@@ -42,13 +42,7 @@ class CPU(Tick):
 
         # Init
         self.check_schedubility()
-        self.init_tasks(tasks)
-        self.init_cores()
-        self.init_scheduler(scheduler)
-        self.init_mapper(mapper)
-
-        # Communication with C code
-        self.init_pipes()
+        self.init(scheduler, mapper)
 
     def __del__(self):
         if self.length_rx_fd is not None:
@@ -64,39 +58,38 @@ class CPU(Tick):
             print(f'Ths tasks are not scheduable, utilizatoin = {ut}')
             exit(1)
 
-    def init_cores(self):
+    def init(self, scheduler, mapper):
+        # Init cores
         for idx in range(self.core_count):
             self.cores[str(idx)] = Core(idx)
-
-    def init_scheduler(self, scheduler):
+        # Init scheduler and mapper
         self.scheduler = scheduler()
-
-    def init_mapper(self, mapper):
         self.mapper = mapper()
 
-    def init_tasks(self, tasks):
+        # Init tasks
         for task in tasks:
             self.task_list.append(Task(task['name'], task['period'], task['execution_time']))
 
-    def init_pipes(self):
+        # Init pipes
         if not os.path.exists(fifo_path1):
             os.mkfifo(fifo_path1)
             os.mkfifo(fifo_path2)
             os.mkfifo(fifo_path3)
-
         # Open named pipe (FIFO) for reading
         self.length_rx_fd = os.open(fifo_path1, os.O_RDWR)
         self.status_rx_fd = os.open(fifo_path2, os.O_RDWR)
         self.task_tx_fd = os.open(fifo_path3, os.O_RDWR)
 
     def get_performance_data(self):
-        print("waiting for data")
-
+        # print("waiting for data")
         data = os.read(self.length_rx_fd, 8)
         length = int().from_bytes(data,byteorder='little')
-        data = os.read(self.status_rx_fd, length)
-
-        return json.loads(data.decode('utf-8'))
+        if length > 0:
+            data = os.read(self.status_rx_fd, length)
+            return json.loads(data.decode('utf-8'))
+        else:
+            print("received last data")
+            return None
 
     def check_free_cores(self):
         for core in self.cores:
@@ -117,7 +110,6 @@ class CPU(Tick):
             for core_idx in range(4):
                 core_data = status_data['performance_counters'][f'core{core_idx}']
                 if task_name == core_data['name']:
-                    print(f'recev name - > {core_data["name"]}')
                     task.update_status(core_data, status_data['temperatures'][f'core{core_idx + 8}'])
                     break
             else:  # If no matching task name is found
@@ -130,13 +122,13 @@ class CPU(Tick):
     def get_execution_status(self):
         # Get data
         status_data = self.get_performance_data()
-
-        # Update cores and tasks
-        self.update_cores(status_data)
-        self.update_tasks(status_data)
-        # Add power and energy
-        self.power_timeline.append(status_data['power'])
-        self.energy_timeline.append(status_data['energy'])
+        if status_data is not None:
+            # Update cores and tasks
+            self.update_cores(status_data)
+            self.update_tasks(status_data)
+            # Add power and energy
+            self.power_timeline.append(status_data['power'])
+            self.energy_timeline.append(status_data['energy'])
 
         return status_data
 
@@ -150,10 +142,12 @@ class CPU(Tick):
 
     def execute(self):
         schedule_data = {}
+        self.free_cores = 0
+
         for core_id in ['0', '1', '2', '3']:
             if self.cores[core_id].is_free():
                 self.free_cores += 1
-        print(Fore.RED + f'Free cores = {self.free_cores}')
+     
         for core_id in ['0', '1', '2', '3']:
             if core_id in self.task_map:
                 task_code = self.task_map.get(core_id, '0')
@@ -169,7 +163,7 @@ class CPU(Tick):
             else:
                 schedule_data[f'core{core_id}'] = -1
 
-        print(Fore.RED + f'Free cores after schedule= {self.free_cores}')
+        # print(Fore.RED + f'Free cores after schedule= {self.free_cores}')
         self.send_new_schedule(schedule_data)
         self.task_map = {}
 
@@ -210,10 +204,16 @@ class CPU(Tick):
         T = 0;
         while True:
             status_data = self.get_execution_status()
-            if self.check_free_cores():
-                self.schedule()
-                self.map_to_core()
-            schedule_data = self.execute()
+            if status_data is not None:
+                if self.check_free_cores():
+                    self.schedule()
+                    self.map_to_core()
+                schedule_data = self.execute()
 
-            self.inform(status_data, schedule_data, T)
-            T += 1
+                # self.inform(status_data, schedule_data, T)
+                T += 1
+            else:
+                break
+
+        for task in self.task_list:
+            task.report()

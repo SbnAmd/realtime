@@ -15,9 +15,9 @@ class Scheduler:
                     deadline = (int(task.get_tick()/task.period) + 1)*task.period - task.get_tick()
                     deadline_dict[task.get_task_name()] = deadline
             deadline_dict = {k: v for k, v in sorted(deadline_dict.items(), key=lambda item: item[1])}
-            print(Fore.LIGHTCYAN_EX + "New deadlines:")
-            for k in deadline_dict:
-                print(f'{k} deadline = {deadline_dict[k]}')
+            # print(Fore.LIGHTCYAN_EX + "New deadlines:")
+            # for k in deadline_dict:
+            #     print(f'{k} deadline = {deadline_dict[k]}')
 
 
         cnt = 0

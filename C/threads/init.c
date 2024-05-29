@@ -81,7 +81,7 @@ void init(){
     usleep(PRELOAD_DELAY);
     usleep(CYCLES_TO_RUN*PERIOD);
     stop_flag = 1;
-
+    sleep(2);
     // Release all
     release_threads();
 }

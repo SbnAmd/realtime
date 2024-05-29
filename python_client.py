@@ -8,7 +8,6 @@ HOST = '127.0.0.1'  # The server's hostname or IP address
 PORT = 8080         # The port used by the server
 
 def main():
-
     # Define shared memory name
     shm_name = "my_shared_memory1"
 

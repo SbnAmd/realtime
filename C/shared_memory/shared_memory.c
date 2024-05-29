@@ -13,14 +13,8 @@ extern int kill_flag;
 
 
 void* shared_mem_worker() {
-    int valread;
+    int valread, ret = 0;
     size_t length;
-
-#ifdef DEBUG
-    struct timespec start, end;
-    long elapsed_ns;
-#endif
-
 
 
     // Create named pipe (FIFO) for signaling
@@ -45,19 +39,16 @@ void* shared_mem_worker() {
         }
 
         pthread_cond_wait(&server_cond, &server_mtx);
-
-#ifdef DEBUG
-        clock_gettime(CLOCK_MONOTONIC, &start);
-#endif
+        // Check if execution finished
+        if(kill_flag == 1)
+            break;
 
         length = strlen(g_buffer);
         write(data_fd, g_buffer, length);
-
         write(data_len_fifo_fd, &length, sizeof(size_t));
 
         // Clear buffer
         memset(g_buffer, '\0', 2048);
-
 
         // Receive data from client
         valread = read(new_schedule_fd, g_buffer, 2048);
@@ -65,15 +56,10 @@ void* shared_mem_worker() {
             perror("read");
             exit(EXIT_FAILURE);
         }
-//#ifdef DEBUG
-//        printf("received new schedule\n");
-//#endif
+        // Check if execution finished
+        if(kill_flag == 1)
+            break;
 
-//#ifdef DEBUG
-//        clock_gettime(CLOCK_MONOTONIC, &end);
-//        elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-//        printf("shared mem transfer time : %f\n",elapsed_ns / 1000000.0); // Elapsed time in milliseconds
-//#endif
         pthread_cond_signal(&server_cond);
 
         if(pthread_mutex_unlock(&server_mtx) != 0){
@@ -82,6 +68,10 @@ void* shared_mem_worker() {
 
     }
 
+    // Signal end of execution, double sending 4 bytes because python read 8 bytes
+    write(data_len_fifo_fd, &ret, sizeof(ret));
+    write(data_len_fifo_fd, &ret, sizeof(ret));
+    usleep(1000);
     // Close named pipe (FIFO)
     close(data_len_fifo_fd);
     unlink(fifo_path1); // Remove FIFO file

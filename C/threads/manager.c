@@ -26,18 +26,18 @@ extern int kill_flag;
 extern struct timespec start;
 
 void copy_cores_status(int* status){
-    printf("Core status : \n");
+//    printf("Core status : \n");
     for(int i = 0; i < NUM_CORES; i++){
 
         // Copying core statuses
         LOCK(&core_mutexes[i]);
         status[i] = core_status[i];
 #ifdef DEBUG
-        if(status[i] == IDLE){
-            printf("\tCore[%d] is IDLE\n",i);
-        }else{
-            printf("\tCore[%d] is RUNNING\n",i);
-        }
+//        if(status[i] == IDLE){
+//            printf("\tCore[%d] is IDLE\n",i);
+//        }else{
+//            printf("\tCore[%d] is RUNNING\n",i);
+//        }
 #endif
         UNLOCK(&core_mutexes[i]);
     }
@@ -120,6 +120,7 @@ void* manager(void* arg){
 
         if(stop_flag == 1){
             kill_flag = 1;
+            pthread_cond_signal(&server_cond);
             break;
         }
     }

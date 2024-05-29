@@ -35,8 +35,8 @@ void measure_kernel_power(){
 
     // Put other cores to sleep
     for(int i = 0; i <= END_CORE-BEGIN_CORE; i++){
-        assign_task_to_core(&_params, &_attrs[i], &_threads[i], i, sleep_function, NULL);
-//        assign_task_to_core(&_params, &_attrs[i], &_threads[i], i+CORE_OFFSET, stress_function, NULL);
+//        assign_task_to_core(&_params, &_attrs[i], &_threads[i], i + CORE_OFFSET, sleep_function, NULL);
+        assign_task_to_core(&_params, &_attrs[i], &_threads[i], i+CORE_OFFSET, stress_function, NULL);
     }
 
     // Open the file for reading
@@ -45,30 +45,30 @@ void measure_kernel_power(){
     energy1 = 0;
     for(int i = 0 ; i < REPETITION; i++){
 
-        fp = fopen(RAPL_PATH, "r");
-        if (fp == NULL) {
-            perror("Error opening file\n");
-            exit(1);
-        }
-
-        // Read the contents of the file
-        if (fgets(buffer, 32, fp) == NULL) {
-            perror("Error reading file");
-            continue;
-        }
-
-        // Convert the string to an integer (energy in microjoules)
-        energy2 = strtoul(buffer, NULL, 10);
-
-        if(energy1 != 0){
-            power = (double )(energy2 - energy1)/MEASURE_DURATION;
-            printf("Power =  %f W\n", power);
-        }
-
-        energy1 = energy2;
-
-        // Close the file
-        fclose(fp);
+//        fp = fopen(RAPL_PATH, "r");
+//        if (fp == NULL) {
+//            perror("Error opening file\n");
+//            exit(1);
+//        }
+//
+//        // Read the contents of the file
+//        if (fgets(buffer, 32, fp) == NULL) {
+//            perror("Error reading file");
+//            continue;
+//        }
+//
+//        // Convert the string to an integer (energy in microjoules)
+//        energy2 = strtoul(buffer, NULL, 10);
+//
+//        if(energy1 != 0){
+//            power = (double )(energy2 - energy1)/MEASURE_DURATION;
+//            printf("Power =  %f W\n", power);
+//        }
+//
+//        energy1 = energy2;
+//
+//        // Close the file
+//        fclose(fp);
         usleep(MEASURE_DURATION);
     }
 

@@ -61,9 +61,9 @@ void get_core_temperatures(float* core_temperatures) {
     }
 
 #ifdef DEBUG
-    clock_gettime(CLOCK_MONOTONIC, &lend);
-    elapsed_ns = (lend.tv_sec-lstart.tv_sec) * 1000000000 + (lend.tv_nsec-lstart.tv_nsec);
-    printf("temp took %f \n", elapsed_ns / 1000000.0);
+//    clock_gettime(CLOCK_MONOTONIC, &lend);
+//    elapsed_ns = (lend.tv_sec-lstart.tv_sec) * 1000000000 + (lend.tv_nsec-lstart.tv_nsec);
+//    printf("temp took %f \n", elapsed_ns / 1000000.0);
 #endif
     // Close the pipe
     pclose(fp);

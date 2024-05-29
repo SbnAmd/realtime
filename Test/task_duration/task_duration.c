@@ -22,14 +22,15 @@ void* tasks_duration_worker(){
     long elapsed_ns;
 
 
-
+    printf("\n");
     for(int t = 0 ; t < TASK_COUNT-1 ; t++){
-        printf("Task %s \t", task_names[t]);
+//        printf("Task %s \t", task_names[t]);
         clock_gettime(CLOCK_MONOTONIC, &start);
         tasks[t]();
         clock_gettime(CLOCK_MONOTONIC, &end);
         elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-        printf(" duration : %f\n", elapsed_ns / 1000000.0);
+//        printf(" duration : %f\n", elapsed_ns / 1000000.0);
+        printf("[%f] - ", elapsed_ns / 1000000.0);
     }
 
 
@@ -42,7 +43,7 @@ void check_tasks_duration(){
     pthread_attr_t attr;
     pthread_t thread;
 
-    assign_task_to_core(&params, &attr, &thread, 15, tasks_duration_worker, NULL);
+    assign_task_to_core(&params, &attr, &thread, 4, tasks_duration_worker, NULL);
     pthread_join(thread, NULL);
 
 };

@@ -175,9 +175,6 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     }
 
 
-//    int cpu_cycles_fd, cpu_instructions_fd, cpu_cache_misses_fd;
-//    int cpu_cache_references_fd, cpu_branch_misses_fd, cpu_branch_instructions_fd;
-//    int cpu_page_faults_fd, cpu_context_switches_fd, cpu_migrations_fd;
     // Reset events
     ioctl(cpu_cycles_fd, PERF_EVENT_IOC_RESET, 0);
     ioctl(cpu_instructions_fd, PERF_EVENT_IOC_RESET, 0);
@@ -227,18 +224,7 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     read(cpu_page_faults_fd, &perf_event->cpu_page_faults, sizeof(long long));
     read(cpu_context_switches_fd, &perf_event->cpu_context_switches, sizeof(long long));
     read(cpu_migrations_fd, &perf_event->cpu_migrations, sizeof(long long));
-#ifdef DEBUG
-//    printf("core = %d \n", core);
-//    printf("cycles = %lld \n", (*perf_event).cpu_cycles);
-//    printf("cpu_instructions = %lld \n", (*perf_event).cpu_instructions);
-//    printf("cpu_cache_misses = %lld \n", (*perf_event).cpu_cache_misses);
-//    printf("cpu_cache_references = %lld \n", (*perf_event).cpu_cache_references);
-//    printf("cpu_branch_misses = %lld \n", (*perf_event).cpu_branch_misses);
-//    printf("cpu_branch_instructions = %lld \n", (*perf_event).cpu_branch_instructions);
-//    printf("cpu_page_faults = %lld \n", (*perf_event).cpu_page_faults);
-//    printf("cpu_context_switches = %lld \n", (*perf_event).cpu_context_switches);
-//    printf("cpu_migrations = %lld \n", (*perf_event).cpu_migrations);
-#endif
+    clock_gettime(CLOCK_MONOTONIC, &end);
     // Time calc
     elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
     perf_event->duration = elapsed_ns / 1000000.0; // Elapsed time in milliseconds

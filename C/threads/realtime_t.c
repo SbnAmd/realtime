@@ -98,22 +98,9 @@ void task(FunctionPtr real_task, int core_idx, char *name){
 
     struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
     strcpy(perf_event->name, name);
-    struct timespec end, lstart;
-    long elapsed_ns, duration_ns;
 
-#ifdef DEBUG
-//    clock_gettime(CLOCK_MONOTONIC, &end);
-//    clock_gettime(CLOCK_MONOTONIC, &lstart);
-//    elapsed_ns = (end.tv_sec-start.tv_sec) * 1000000000 + (end.tv_nsec-start.tv_nsec);
-//    printf("\t--->[%s started on core %d at %f]\n", name, core_idx, elapsed_ns / 1000000.0);
-#endif
-        run_task_and_get_perf_event(real_task, perf_event, core_idx+CORE_BASE);
-#ifdef DEBUG
-//    clock_gettime(CLOCK_MONOTONIC, &end);
-//    elapsed_ns = (end.tv_sec-start.tv_sec) * 1000000000 + (end.tv_nsec-start.tv_nsec);
-//    duration_ns = (end.tv_sec-lstart.tv_sec) * 1000000000 + (end.tv_nsec-lstart.tv_nsec);
-//    printf("\t--->[%s finished on core %d at %f and took %f miliseconds]\n", name, core_idx, elapsed_ns / 1000000.0, duration_ns/1000000.0);
-#endif
+    run_task_and_get_perf_event(real_task, perf_event, core_idx+CORE_BASE);
+
 }
 
 
@@ -122,8 +109,8 @@ void* worker(void* arg) {
     int task_idx;
     int core_idx = (int)(*((int*)arg));
 
-    for(int i = 1; i < 13; i++)
-        task_list[i](core_idx);
+//    for(int i = 1; i < 13; i++)
+//        task_list[i](core_idx);
 
 
     // Wait until get first schedule
@@ -135,7 +122,7 @@ void* worker(void* arg) {
 
 
     while (kill_flag == 0){
-
+        memset(&perf_event_array[core_idx], 0, sizeof(struct PerformanceEvents));
         // Change thread status
         LOCK(&core_mutexes[core_idx]);
         task_idx = new_task_IDes[core_idx];
@@ -146,7 +133,6 @@ void* worker(void* arg) {
             core_status[core_idx] = RUNNING;
         }
         UNLOCK(&core_mutexes[core_idx]);
-
         // Run task
         task_list[task_idx](core_idx);
 
