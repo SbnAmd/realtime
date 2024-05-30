@@ -35,6 +35,7 @@ double power;
 unsigned long energy_uj;
 int stop_flag = 0;
 int kill_flag = 0;
+long global_tick;
 char g_buffer[2048] = {'\0'};
 struct timespec start, end;
 long elapsed_ns;

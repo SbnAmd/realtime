@@ -62,6 +62,8 @@ struct PerformanceEvents{
     long long cpu_page_faults;
     long long cpu_context_switches;
     long long cpu_migrations;
+    long start;
+    long end;
     double duration;
     char name[MAX_LENGTH];
 };

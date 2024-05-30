@@ -2,7 +2,7 @@
 class Tick:
 
     def __init__(self):
-        self._tick = -1
+        self._tick = 0
 
     def tick(self):
         self._tick += 1

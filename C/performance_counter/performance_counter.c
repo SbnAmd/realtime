@@ -215,6 +215,7 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     ioctl(cpu_context_switches_fd, PERF_EVENT_IOC_DISABLE, 0);
     ioctl(cpu_migrations_fd, PERF_EVENT_IOC_DISABLE, 0);
 
+    perf_event->core_idx = core;
     read(cpu_cycles_fd, &perf_event->cpu_cycles, sizeof(long long));
     read(cpu_instructions_fd, &perf_event->cpu_instructions, sizeof(long long));
     read(cpu_cache_misses_fd, &perf_event->cpu_cache_misses, sizeof(long long));

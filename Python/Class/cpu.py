@@ -100,18 +100,21 @@ class CPU(Tick):
 
     def update_cores(self, status_data):
         for core_idx in range(4):
-            core_status_data = status_data['performance_counters'][f'core{core_idx}']
             core_temperature = status_data['temperatures'][f'core{core_idx + 8}']
-            self.cores[str(core_idx)].update_status(core_status_data, core_temperature)
+            if f'core{core_idx}' in status_data['performance_counters']:
+                core_status_data = status_data['performance_counters'][f'core{core_idx}']
+                self.cores[str(core_idx)].update_status(core_status_data, core_temperature)
 
     def update_tasks(self, status_data):
+        print(status_data)
         for task in self.task_list:
             task_name = task.get_task_name()
             for core_idx in range(4):
-                core_data = status_data['performance_counters'][f'core{core_idx}']
-                if task_name == core_data['name']:
-                    task.update_status(core_data, status_data['temperatures'][f'core{core_idx + 8}'])
-                    break
+                if f'core{core_idx}' in status_data['performance_counters']:
+                    core_data = status_data['performance_counters'][f'core{core_idx}']
+                    if task_name == core_data['name']:
+                        task.update_status(core_data, status_data['temperatures'][f'core{core_idx + 8}'])
+                        break
             else:  # If no matching task name is found
                 task.update_status(None, None)
 

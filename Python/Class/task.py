@@ -31,7 +31,7 @@ class Task(Tick):
         return self.task_name
 
     def add_to_timeline(self, status: dict, temp):
-        new_perfcount = PerfCount(status, None, self.status, self.get_tick(), temp)
+        new_perfcount = PerfCount(status, None, self.get_status_str(), self.get_tick(), temp)
         self.timeline.append(new_perfcount)
 
     def set_status(self, status):
@@ -101,6 +101,8 @@ class Task(Tick):
                  'status': [],
                  'frequency': [],
                  'tick': [],
+                 'start_tick': [],
+                 'end_tick': [],
                  'temp': []
             }
 

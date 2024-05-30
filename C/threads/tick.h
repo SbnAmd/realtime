@@ -10,6 +10,7 @@
 
 
 void* tick(void* arg);
+long get_tick();
 
 
 

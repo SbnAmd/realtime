@@ -98,8 +98,19 @@ void task(FunctionPtr real_task, int core_idx, char *name){
 
     struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
     strcpy(perf_event->name, name);
+    LOCK(&tick_mtx);
+    perf_event->start = get_tick();
+    if(strcmp(name, "QsortSmallTask") == 0)
+        printf("qsort start at %ld on core %d\n", get_tick(), core_idx);
+    UNLOCK(&tick_mtx);
 
     run_task_and_get_perf_event(real_task, perf_event, core_idx+CORE_BASE);
+
+    LOCK(&tick_mtx);
+    perf_event->end = get_tick();
+    if(strcmp(name, "QsortSmallTask") == 0)
+        printf("qsort end at %ld on core %d\n", get_tick(), core_idx);
+    UNLOCK(&tick_mtx);
 
 }
 
@@ -123,6 +134,7 @@ void* worker(void* arg) {
 
     while (kill_flag == 0){
         memset(&perf_event_array[core_idx], 0, sizeof(struct PerformanceEvents));
+        memset(&perf_event_array[core_idx].name, '\0', MAX_LENGTH);
         // Change thread status
         LOCK(&core_mutexes[core_idx]);
         task_idx = new_task_IDes[core_idx];
