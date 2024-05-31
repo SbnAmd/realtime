@@ -45,12 +45,12 @@ int main(){
 
 #ifdef TEST_TASK_DURATION
 //    while (1){
-//        check_tasks_duration();
+        check_tasks_duration();
 //    }
 
 #endif
 
-    init();
+//    init();
 
 //    tasks_time();
 //
