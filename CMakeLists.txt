@@ -79,4 +79,4 @@ add_executable(realtime
         TaskPerformance/task_performance.h
 )
 add_link_options("-pthread")
-target_link_libraries(realtime PRIVATE m sensors cjson)
+target_link_libraries(realtime PRIVATE m sensors cjson ssl crypto)

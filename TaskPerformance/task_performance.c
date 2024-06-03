@@ -4,6 +4,12 @@
 
 #include "task_performance.h"
 
+extern int stop_flag;
+extern int core_stat[4];
+int freq_selection[4] = {0, 1, 2, 3};
+int freq_counter[4] = {7, 1, 2, 6};
+int running_task_id[4] = {0,0,0,0};
+pthread_mutex_t cores_mtx[4] = {PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER, PTHREAD_MUTEX_INITIALIZER,PTHREAD_MUTEX_INITIALIZER};
 struct PerformanceEvents perf_event_array[TEST_REPETITION] = {0};
 unsigned long energy_arr[TEST_REPETITION] = {0};
 unsigned long temp_arr[TEST_REPETITION] = {0};
@@ -11,6 +17,11 @@ void (*tasks[TASK_COUNT])(int)={&QsortLargeTask, &QsortSmallTask,
                                &BitCountLargeTask, &BitCountSmallTask, &BasicMathLargeTask,
                                &BasicMathSmallTask, &StringSearchLargeTask, &StringSearchSmallTask,
                                &FFTLargeTask, &FFTSmallTask, &CRCLargeTask, &CRCSmallTask};
+
+void (*raw_tasks[TASK_COUNT])()={&qsort_large, &qsort_small,
+                               &bitcnts_large, &bitcnts_small, &basicmath_large,
+                               &basicmath_small, &string_search_large, &string_search_small,
+                               &fft_large, &fft_small, &crc_large, &crc_small};
 
 char* task_file_names[] = { "/home/sbn/Desktop/realtime/Data/Perf/qsort_large.txt",
                             "/home/sbn/Desktop/realtime/Data/Perf/qsort_small.txt",
@@ -26,12 +37,31 @@ char* task_file_names[] = { "/home/sbn/Desktop/realtime/Data/Perf/qsort_large.tx
                             "/home/sbn/Desktop/realtime/Data/Perf/crc_small.txt",
 };
 
+char* frequency_file_path[] = {
+                            "/sys/devices/system/cpu/cpu12/cpufreq/scaling_min_freq",
+                            "/sys/devices/system/cpu/cpu12/cpufreq/scaling_max_freq",
+                            "/sys/devices/system/cpu/cpu13/cpufreq/scaling_min_freq",
+                            "/sys/devices/system/cpu/cpu13/cpufreq/scaling_max_freq",
+                            "/sys/devices/system/cpu/cpu14/cpufreq/scaling_min_freq",
+                            "/sys/devices/system/cpu/cpu14/cpufreq/scaling_max_freq",
+                            "/sys/devices/system/cpu/cpu15/cpufreq/scaling_min_freq",
+                            "/sys/devices/system/cpu/cpu15/cpufreq/scaling_max_freq",
+};
+
+char* frequencies[] = {
+        "1000000",
+        "2000000",
+        "3000000",
+        "4000000",
+        "4700000",
+};
+
 void task(FunctionPtr real_task, int core_idx, char *name){
 
     struct PerformanceEvents* perf_event = &perf_event_array[core_idx];
     strcpy(perf_event->name, name);
     perf_event->start = 0;
-    run_task_and_get_perf_event(real_task, perf_event, TEST_CORE);
+    run_task_and_get_perf_event(real_task, perf_event, core_idx);
     perf_event->end = 0;
 }
 
@@ -199,12 +229,84 @@ void* run_test(){
     }
 }
 
+void write_file(char* _filepath, char* freq){
+
+    FILE *file = fopen(_filepath, "w");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(1);
+    }
+
+    if (fprintf(file, "%s", freq) < 0) {
+        perror("Error writing to file");
+        fclose(file);
+        exit(1);
+    }
+
+    // Close the file
+    if (fclose(file) != 0) {
+        perror("Error closing file");
+        exit(1);
+    }
+
+}
+
+
+void idle(){
+    srandom(time(NULL));
+    int random_sleep = random() % 4;
+
+    usleep(random_sleep*1000);
+
+}
+
+void set_freq(int core_id,  int force){
+    unsigned char buf[1];
+    int next_freq;
+    if(force < 0){
+        if(RAND_bytes(buf, sizeof(buf)) != 1){
+            exit(1);
+        }
+        next_freq = buf[0] % 4;
+    } else{
+        next_freq = force;
+    }
+
+
+    write_file(frequency_file_path[2*core_id], frequencies[next_freq]);
+    write_file(frequency_file_path[2*core_id+1], frequencies[next_freq]);
+}
+
 void* core_worker(int core_id){
 
+    unsigned char buf[1];
+
+    printf("Core %d begin\n", core_id);
+
+    while (stop_flag == 0){
+//        set_freq(core_id);
+        if(RAND_bytes(buf, sizeof(buf)) != 1){
+            exit(1);
+        }
+//        srandom(core_id+1);
+        int random_task = buf[0] % 13;
+
+        if(random_task != 12){
+            LOCK(&cores_mtx[core_id]);
+            core_stat[core_id] = 1;
+            running_task_id[core_id] = random_task;
+            UNLOCK(&cores_mtx[core_id]);
+            raw_tasks[random_task]();
+        } else{
+            LOCK(&cores_mtx[core_id]);
+            core_stat[core_id] = 0;
+            running_task_id[core_id] = random_task;
+            UNLOCK(&cores_mtx[core_id]);
+            idle();
+        }
 
 
-
-
+    }
 }
 
 
