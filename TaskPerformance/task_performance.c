@@ -50,8 +50,8 @@ char* frequency_file_path[] = {
 
 char* frequencies[] = {
         "1000000",
-        "2000000",
-        "3000000",
+        "2500000",
+        "4000000",
         "4000000",
         "4700000",
 };
@@ -254,9 +254,9 @@ void write_file(char* _filepath, char* freq){
 
 void idle(){
     srandom(time(NULL));
-    int random_sleep = random() % 4;
+//    int random_sleep = random() % 4;
 
-    usleep(random_sleep*1000);
+    usleep(10*1000);
 
 }
 
@@ -280,7 +280,7 @@ void set_freq(int core_id,  int force){
 void* core_worker(int core_id){
 
     unsigned char buf[1];
-
+    extern int run;
     printf("Core %d begin\n", core_id);
 
     while (stop_flag == 0){
@@ -289,19 +289,21 @@ void* core_worker(int core_id){
             exit(1);
         }
 //        srandom(core_id+1);
-        int random_task = buf[0] % 13;
+//        int random_task = buf[0] % 13;
+        int random_task = 5;
 
-        if(random_task != 12){
-            LOCK(&cores_mtx[core_id]);
-            core_stat[core_id] = 1;
-            running_task_id[core_id] = random_task;
-            UNLOCK(&cores_mtx[core_id]);
+//        if(random_task != 12){
+        if(run > 0){
+//            LOCK(&cores_mtx[core_id]);
+//            core_stat[core_id] = 1;
+//            running_task_id[core_id] = random_task;
+//            UNLOCK(&cores_mtx[core_id]);
             raw_tasks[random_task]();
         } else{
-            LOCK(&cores_mtx[core_id]);
-            core_stat[core_id] = 0;
-            running_task_id[core_id] = random_task;
-            UNLOCK(&cores_mtx[core_id]);
+//            LOCK(&cores_mtx[core_id]);
+//            core_stat[core_id] = 0;
+//            running_task_id[core_id] = random_task;
+//            UNLOCK(&cores_mtx[core_id]);
             idle();
         }
 
