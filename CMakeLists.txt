@@ -75,6 +75,7 @@ add_executable(realtime
         C/tasks/sniptype.h
         C/threads/temperature.c
         C/threads/temperature.h
+        thread.c
 )
 add_link_options("-pthread")
 target_link_libraries(realtime PRIVATE m sensors cjson)

@@ -41,22 +41,22 @@ struct timespec start, end;
 long elapsed_ns;
 
 
-int main(){
-
-#ifdef TEST_TASK_DURATION
-//    while (1){
-        check_tasks_duration();
-//    }
-
-#endif
-
-//    init();
-
-//    tasks_time();
+//int main(){
 //
-//    measure_kernel_power();
-
-
-    return 0;
-}
+//#ifdef TEST_TASK_DURATION
+////    while (1){
+//        check_tasks_duration();
+////    }
+//
+//#endif
+//
+////    init();
+//
+////    tasks_time();
+////
+////    measure_kernel_power();
+//
+//
+//    return 0;
+//}
 
