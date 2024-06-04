@@ -1,8 +1,8 @@
 import subprocess
-from Python.Class.cpu import CPU
-from Python.Class.map import Mapper
-from Python.Class.schedule import Scheduler
-from Python.Class.globals import *
+from old_Python.Class.cpu import CPU
+from old_Python.Class.map import Mapper
+from old_Python.Class.schedule import Scheduler
+from old_Python.Class.globals import *
 
 binary_path = './cmake-build-debug/realtime'
 

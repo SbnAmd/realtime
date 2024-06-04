@@ -2,8 +2,8 @@ from enum import Enum
 
 import numpy as np
 from colorama import Fore
-from Python.Class.tick import Tick
-from Python.Class.performance_counter import PerformanceCounter as PerfCount
+from old_Python.Class.tick import Tick
+from old_Python.Class.performance_counter import PerformanceCounter as PerfCount
 import pandas as pd
 
 

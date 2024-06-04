@@ -1,6 +1,6 @@
 from enum import Enum
-from Python.Class.tick import Tick
-from Python.Class.performance_counter import PerformanceCounter as PerfCount
+from old_Python.Class.tick import Tick
+from old_Python.Class.performance_counter import PerformanceCounter as PerfCount
 
 
 class CoreStatus(Enum):

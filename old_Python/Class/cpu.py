@@ -1,8 +1,8 @@
 from enum import Enum
-from Python.Class.cpu_core import Core, CoreStatus
-from Python.Class.task import Task, TaskStatus
-from Python.Class.tick import Tick
-from Python.Class.globals import task_IDes, tasks
+from old_Python.Class.cpu_core import Core, CoreStatus
+from old_Python.Class.task import Task, TaskStatus
+from old_Python.Class.tick import Tick
+from old_Python.Class.globals import task_IDes, tasks
 import json
 from colorama import Fore
 # from Test.status_generator import StatusGenerator

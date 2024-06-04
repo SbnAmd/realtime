@@ -1,5 +1,5 @@
 from colorama import Fore
-from Python.Class.task import Task, TaskStatus
+from old_Python.Class.task import Task, TaskStatus
 
 
 class Scheduler:
