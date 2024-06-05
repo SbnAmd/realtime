@@ -5,19 +5,19 @@
 
 
 char* fifo_file_names[] = {
-        "/core1/tx",
-        "/core1/rx",
-        "/core2/tx",
-        "/core2/rx",
-        "/core3/tx",
-        "/core3/rx",
-        "/core4/tx",
-        "/core5/rx",
+        "/tmp/core1_tx",
+        "/tmp/core1_rx",
+        "/tmp/core2_tx",
+        "/tmp/core2_rx",
+        "/tmp/core3_tx",
+        "/tmp/core3_rx",
+        "/tmp/core4_tx",
+        "/tmp/core5_rx",
 
 };
 
 
-void (*tasks[TASK_COUNT-1])()={&qsort_large, &qsort_small,
+void (*raw_tasks[TASK_COUNT-1])()={&qsort_large, &qsort_small,
                                &bitcnts_large, &bitcnts_small, &basicmath_large,
                                &basicmath_small, &string_search_large, &string_search_small,
                                &fft_large, &fft_small, &crc_large, &crc_small};
@@ -37,20 +37,24 @@ void* ex_worker(void* arg) {
     int tx_fd = open(fifo_tx, O_RDWR);
     int rx_fd = open(fifo_rx, O_RDWR);
 
+    printf("Core %d waiting for new schedule\n", core_idx);
     // todo: send ready msg to python
     while (1){
 
-        ret = read(rx_fd, (void*)&task_id, sizeof(task_id));
+//        ret = read(rx_fd, (void*)&task_id, sizeof(task_id));
+        ret = read(rx_fd, (void*)&task_id, 1);
         if (ret <= 0) {
             printf("Core %d failed to receive data\n", core_idx);
             exit(EXIT_FAILURE);
         }
-        printf("received task_id : %d\n", task_id);
 
+
+        task_id -= 48;
+        printf("Core %d received task_id : %d, %x\n",core_idx, task_id, task_id);
         if(task_id < 0)
             break;
         else{
-            tasks[task_id]();
+            raw_tasks[task_id]();        // fixme
         }
         ret = 0;
         write(tx_fd, &ret, sizeof(ret));
@@ -70,9 +74,10 @@ int main(){
     struct sched_param params;
     pthread_attr_t ex_attrs[NUM_CORES];
     pthread_t ex_thread[NUM_CORES];
+    int core_id[NUM_CORES]={0, 1, 2, 3};
 
     for(int i = 0; i < NUM_CORES; i++)
-        assign_task_to_core(&params, &ex_attrs[i], &ex_thread[i], 12 + i, ex_worker, (void*)&i);
+        assign_task_to_core(&params, &ex_attrs[i], &ex_thread[i], 12 + i, ex_worker, &core_id[i]);
 
     for(int i = 0; i < NUM_CORES; i++){
         pthread_join(ex_thread[i], NULL);
