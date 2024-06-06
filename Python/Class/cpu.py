@@ -5,6 +5,7 @@ from Python.Class.tick import Tick
 from Python.Utils.plot_scheduling import plot
 from colorama import Fore
 
+CYCLES_TO_RUN = 300000
 
 class CPU:
 
@@ -55,6 +56,6 @@ class CPU:
     def run(self):
         print('Starting scheduler')
         self.clock.register_function(self.schedule)
-        self.clock.run(30)
+        self.clock.run(CYCLES_TO_RUN)
         self.shutdown()
         self.plot()

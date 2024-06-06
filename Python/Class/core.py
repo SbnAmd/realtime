@@ -61,10 +61,13 @@ class Core:
         os.write(self.tx_fd, bytes(str(task_id), 'utf-8'))
 
     def get_performance_data(self):
-        data_len = os.read(self.rx_fd, 8)
-        length = int().from_bytes(data_len,byteorder='little')
-        data = os.read(self.rx_fd, length)
-        return json.loads(data.decode('utf-8'))
+        try:
+            data_len = os.read(self.rx_fd, 8)
+            length = int().from_bytes(data_len,byteorder='little')
+            data = os.read(self.rx_fd, length)
+            return json.loads(data.decode('utf-8'))
+        except:
+            return None
 
     def check_for_ack(self):
         readable, _, _ = select.select([self.rx_fd], [], [], 0)
@@ -74,9 +77,9 @@ class Core:
             self.task.inactivate(performance_data)
             self.task = None
             self.timeline[-1][2] = self.clock.get_tick()
-            print(Fore.YELLOW + f'Core {self.core_id} acked')
-        else:
-            print(Fore.LIGHTRED_EX + f'Core {self.core_id} not acked')
+            # print(Fore.YELLOW + f'Core {self.core_id} acked')
+        # else:
+            # print(Fore.LIGHTRED_EX + f'Core {self.core_id} not acked')
 
     def update_task_status(self):
         pass
@@ -85,10 +88,11 @@ class Core:
         return self.status == self.IDLE
 
     def print_status(self):
-        if self.status == self.RUNNING:
-            print(Fore.LIGHTGREEN_EX + f'Core {self.core_id} : {self.task.get_name()}')
-        else:
-            print(Fore.LIGHTGREEN_EX + f'Core {self.core_id} : IDLE')
+        pass
+        # if self.status == self.RUNNING:
+        #     print(Fore.LIGHTGREEN_EX + f'Core {self.core_id} : {self.task.get_name()}')
+        # else:
+        #     print(Fore.LIGHTGREEN_EX + f'Core {self.core_id} : IDLE')
 
     def shutdown(self):
         os.write(self.tx_fd, bytes(str(-1), 'utf-8'))

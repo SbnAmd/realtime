@@ -1,5 +1,17 @@
 
 class TimeLine:
+    temperature_path_list = [
+        "/sys/class/hwmon/hwmon3/temp6_input",
+        "/sys/class/hwmon/hwmon3/temp7_input",
+        "/sys/class/hwmon/hwmon3/temp8_input",
+        "/sys/class/hwmon/hwmon3/temp9_input"
+    ]
+    frequency_path_list = [
+        "/sys/devices/system/cpu/cpu12/cpufreq/scaling_cur_freq",
+        "/sys/devices/system/cpu/cpu13/cpufreq/scaling_cur_freq",
+        "/sys/devices/system/cpu/cpu14/cpufreq/scaling_cur_freq",
+        "/sys/devices/system/cpu/cpu15/cpufreq/scaling_cur_freq",
+    ]
 
     def __init__(self):
         self.active_tick = None
@@ -9,6 +21,8 @@ class TimeLine:
         self.core = None
         self.deadline_tick = None
         self.performance_data = None
+        self.temperature = None
+        self.frequency = None
 
     def set_activate_tick(self, tick: int):
         self.active_tick = tick
@@ -43,5 +57,23 @@ class TimeLine:
     def set_deadline_tick(self, tick):
         self.deadline_tick = tick
 
+    @classmethod
+    def read_fs_var(self, path):
+        fd = open(path, "r")
+        var = int(fd.readline(32))
+        fd.close()
+        return var
+
+    def get_temperature(self):
+        mili_degree = self.read_fs_var(self.temperature_path_list[self.core])
+        self.temperature = int(mili_degree/1000)
+
+    def get_frequency(self):
+        freq_kHz = self.read_fs_var(self.frequency_path_list[self.core])
+        self.frequency = round(freq_kHz / 1000000, 3)
+
     def set_performance_data(self, performance_data: dict):
         self.performance_data = performance_data
+        self.get_frequency()
+        self.get_temperature()
+

@@ -44,7 +44,7 @@ class Task:
             self.status = self.RUNNING
             self.timeline[-1].set_run_tick(self.clock.get_tick())
             self.timeline[-1].set_core(core_id)
-            print(Fore.GREEN + f'{self.get_name()} started')
+            # print(Fore.GREEN + f'{self.get_name()} started')
 
     def check_activation(self):
         if self.status == self.INACTIVE:
@@ -60,21 +60,21 @@ class Task:
             tl.set_activate_tick(self.clock.get_tick())
             tl.set_task_name(self.get_name())
             self.timeline.append(deepcopy(tl))
-            print(Fore.YELLOW + f'{self.get_name()} activated')
+            # print(Fore.YELLOW + f'{self.get_name()} activated')
 
     def inactivate(self, performance_data):
         if self.status == self.RUNNING:
             self.status = self.INACTIVE
             self.timeline[-1].set_inactive_tick(self.clock.get_tick())
             self.timeline[-1].set_performance_data(performance_data)
-            print(Fore.CYAN + f'{self.get_name()} inactivated')
-        else:
-            print(Fore.LIGHTRED_EX + f'{self.get_name()} wants to inactivate but its in {self.status} mode')
+            # print(Fore.CYAN + f'{self.get_name()} inactivated')
+        # else:
+            # print(Fore.LIGHTRED_EX + f'{self.get_name()} wants to inactivate but its in {self.status} mode')
 
     def check_missed_deadline(self):
         if self.status != self.INACTIVE and self.clock.get_tick() > self.deadline:
             self.timeline[-1].set_deadline_tick(self.clock.get_tick())
-            print(Fore.RED + f'{self.get_name()} missed deadline')
+            # print(Fore.RED + f'{self.get_name()} missed deadline')
 
     def get_timeline(self):
         return self.timeline
