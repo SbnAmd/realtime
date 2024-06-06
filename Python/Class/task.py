@@ -1,5 +1,7 @@
 from Python.Class.tick import Tick
 from colorama import Fore
+from Python.Class.timeline import TimeLine
+from copy import deepcopy
 
 
 class Task:
@@ -16,7 +18,7 @@ class Task:
         self.period = period
         self.clock = clock
         self.deadline = 0
-        self.timeline = []
+        self.timeline: list[[TimeLine]] = []
 
     def get_name(self):
         return self.name
@@ -38,12 +40,10 @@ class Task:
             return 1000000
 
     def run(self, core_id: int):
-        print(f'hint1, stat = {self.status}')
         if self.status == self.ACTIVE:
             self.status = self.RUNNING
-            self.timeline[-1][1] = self.clock.get_tick()
-            self.timeline[-1][-2] = core_id
-            print(f'hint2')
+            self.timeline[-1].set_run_tick(self.clock.get_tick())
+            self.timeline[-1].set_core(core_id)
             print(Fore.GREEN + f'{self.get_name()} started')
 
     def check_activation(self):
@@ -56,20 +56,24 @@ class Task:
             self.status = self.ACTIVE
             self.instance += 1
             self.deadline = self.period + self.clock.get_tick()
-            self.timeline.append([self.clock.get_tick(), 0, 0, -1, 0, self.get_name()])
+            tl = TimeLine()
+            tl.set_activate_tick(self.clock.get_tick())
+            tl.set_task_name(self.get_name())
+            self.timeline.append(deepcopy(tl))
             print(Fore.YELLOW + f'{self.get_name()} activated')
 
-    def inactivate(self):
+    def inactivate(self, performance_data):
         if self.status == self.RUNNING:
             self.status = self.INACTIVE
-            self.timeline[-1][2] = self.clock.get_tick()
+            self.timeline[-1].set_inactive_tick(self.clock.get_tick())
+            self.timeline[-1].set_performance_data(performance_data)
             print(Fore.CYAN + f'{self.get_name()} inactivated')
         else:
             print(Fore.LIGHTRED_EX + f'{self.get_name()} wants to inactivate but its in {self.status} mode')
 
     def check_missed_deadline(self):
         if self.status != self.INACTIVE and self.clock.get_tick() > self.deadline:
-            self.timeline[-1][3] = self.clock.get_tick()
+            self.timeline[-1].set_deadline_tick(self.clock.get_tick())
             print(Fore.RED + f'{self.get_name()} missed deadline')
 
     def get_timeline(self):

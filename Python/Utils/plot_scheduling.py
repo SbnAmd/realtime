@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from Python.Class.timeline import TimeLine
 
 # Example data
 cores = ['Core 1', 'Core 2', 'Core 3', 'Core 4']
@@ -30,15 +31,17 @@ def plot(timelines: list):
         timeline = timelines[tl_id]
         for task_index in range(len(timeline)-1):   # ignoring last entry
             # Plot each bar for the core
-            task = timeline[task_index][-1]
-            start = timeline[task_index][1]
-            duration = timeline[task_index][2] - start
-            core_index = timeline[task_index][-2]
-            bar = ax.barh(cores[core_index], duration, left=start, align='center')
-            # Add task name as a label on the bar
-            # ax.text(start + duration / 2, cores[core_index], task,
-            ax.text(start + duration / 2, bar[0].get_y() + 0.05, task,
-                    rotation=90, va='bottom', ha='center', color='black', fontsize=7, fontweight='bold', bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
+            tl: TimeLine = timeline[task_index]
+            task = tl.get_task_name()
+            start = tl.get_run_tick()
+            duration = tl.get_duration()
+            if duration > 0:
+                core_index = tl.get_core()
+                bar = ax.barh(cores[core_index], duration, left=start, align='center')
+                # Add task name as a label on the bar
+                # ax.text(start + duration / 2, cores[core_index], task,
+                ax.text(start + duration / 2, bar[0].get_y() + 0.05, task,
+                        rotation=90, va='bottom', ha='center', color='black', fontsize=7, fontweight='bold', bbox=dict(facecolor='white', alpha=0.8, edgecolor='none'))
 
     # Add labels and title
     ax.set_xlabel('Time')
@@ -48,11 +51,5 @@ def plot(timelines: list):
     # Add grid
     ax.grid(True)
 
-    # min_width = 2  # Adjust as needed
-    # ax.set_xlim(0, None)  # Ensure the minimum width is respected
-    # for spine in ax.spines.values():
-    #     spine.set_bounds(ax.get_xlim()[0], ax.get_xlim()[0] + min_width)
-
-    # Show plot
     plt.show()
 

@@ -22,11 +22,30 @@ void (*raw_tasks[TASK_COUNT-1])()={&qsort_large, &qsort_small,
                                &basicmath_small, &string_search_large, &string_search_small,
                                &fft_large, &fft_small, &crc_large, &crc_small};
 
+void serialize(struct PerformanceEvents *events, cJSON *root){
+
+    cJSON_AddNumberToObject(root, "cpu_cycles", events->cpu_cycles);
+    cJSON_AddNumberToObject(root, "cpu_instructions", events->cpu_instructions);
+    cJSON_AddNumberToObject(root, "cpu_cache_misses", events->cpu_cache_misses);
+    cJSON_AddNumberToObject(root, "cpu_cache_references", events->cpu_cache_references);
+    cJSON_AddNumberToObject(root, "cpu_branch_misses", events->cpu_branch_misses);
+    cJSON_AddNumberToObject(root, "cpu_branch_instructions", events->cpu_branch_instructions);
+    cJSON_AddNumberToObject(root, "cpu_page_faults", events->cpu_page_faults);
+    cJSON_AddNumberToObject(root, "cpu_context_switches", events->cpu_context_switches);
+    cJSON_AddNumberToObject(root, "cpu_migrations", events->cpu_migrations);
+    cJSON_AddNumberToObject(root, "duration", events->duration);
+}
+
+
 void* ex_worker(void* arg) {
 
     int core_idx = (int)(*((int*)arg));
     const char *fifo_tx = fifo_file_names[core_idx*2];
     const char *fifo_rx = fifo_file_names[core_idx*2 + 1];
+    struct PerformanceEvents perf_event;
+    cJSON *root = cJSON_CreateObject();
+    char *json_string;
+    size_t length;
     int ret = -1;
     int task_id = 0;
 
@@ -38,26 +57,27 @@ void* ex_worker(void* arg) {
     int rx_fd = open(fifo_rx, O_RDWR);
 
     printf("Core %d waiting for new schedule\n", core_idx);
-    // todo: send ready msg to python
+
     while (1){
 
-//        ret = read(rx_fd, (void*)&task_id, sizeof(task_id));
         ret = read(rx_fd, (void*)&task_id, 1);
         if (ret <= 0) {
             printf("Core %d failed to receive data\n", core_idx);
             exit(EXIT_FAILURE);
         }
 
-
         task_id -= 48;
-        printf("Core %d received task_id : %d, %x\n",core_idx, task_id, task_id);
         if(task_id < 0)
             break;
         else{
-            raw_tasks[task_id]();        // fixme
+            printf("Core %d received task_id : %d, %x\n",core_idx, task_id, task_id);
+            run_task_and_get_perf_event(raw_tasks[task_id], &perf_event, core_idx);
+            serialize(&perf_event, root);
         }
-        ret = 0;
-        write(tx_fd, &ret, sizeof(ret));
+        json_string = cJSON_PrintUnformatted(root);
+        length = strlen(json_string);
+        write(tx_fd, &length, sizeof(length));
+        write(tx_fd, json_string, strlen(json_string));
     }
 
     close(tx_fd);

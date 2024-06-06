@@ -2,6 +2,7 @@ from Python.Class.task import Task
 import os
 from colorama import Fore
 import select
+import json
 
 
 fifo_file_names = [
@@ -59,12 +60,18 @@ class Core:
         # print(f'Core {self.core_id} sent : {bytes(str(task_id), "utf-8")}')
         os.write(self.tx_fd, bytes(str(task_id), 'utf-8'))
 
+    def get_performance_data(self):
+        data_len = os.read(self.rx_fd, 8)
+        length = int().from_bytes(data_len,byteorder='little')
+        data = os.read(self.rx_fd, length)
+        return json.loads(data.decode('utf-8'))
+
     def check_for_ack(self):
         readable, _, _ = select.select([self.rx_fd], [], [], 0)
         if self.rx_fd in readable:
-            data = os.read(self.rx_fd,4)
+            performance_data = self.get_performance_data()
             self.status = self.IDLE
-            self.task.inactivate()
+            self.task.inactivate(performance_data)
             self.task = None
             self.timeline[-1][2] = self.clock.get_tick()
             print(Fore.YELLOW + f'Core {self.core_id} acked')

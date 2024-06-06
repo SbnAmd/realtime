@@ -6,8 +6,8 @@ set(CMAKE_C_STANDARD 11)
 include_directories(.)
 
 add_executable(realtime
-        C/threads/init.c
-        C/threads/init.h
+#        C/threads/init.c
+#        C/threads/init.h
         C/tasks/benchmark_tasks.h
         C/tasks/bit_counts/bitarray.c
         C/tasks/bit_counts/bitcnt_1.c
@@ -24,31 +24,31 @@ add_executable(realtime
 #        server/server.c
         C/performance_counter/performance_counter.h
         C/performance_counter/performance_counter.c
-        C/power/power.h
-        C/power/power.c
+#        C/power/power.h
+#        C/power/power.c
 #        C/temperature/tempertature.h
 #        C/temperature/tempertature.c
         C/realtime.h
-        C/serdes/serdes.c
-        C/serdes/serdes.h
-        C/shared_memory/shared_memory.h
-        C/shared_memory/shared_memory.c
+#        C/serdes/serdes.c
+#        C/serdes/serdes.h
+#        C/shared_memory/shared_memory.h
+#        C/shared_memory/shared_memory.c
         C/utils/utils.h
         C/utils/utils.c
-        C/threads/tick.h
-        C/threads/tick.c
-        C/threads/realtime_t.h
-        C/threads/realtime_t.c
-        C/threads/manager.h
-        C/threads/manager.c
+#        C/threads/tick.h
+#        C/threads/tick.c
+#        C/threads/realtime_t.h
+#        C/threads/realtime_t.c
+#        C/threads/manager.h
+#        C/threads/manager.c
         main.c
         C/function_types/function_types.h
-        Test/perf_count.h
-        Test/perf_count.c
-        Test/task_times.h
-        Test/task_times.c
-        Test/kernel_power/kernel_power_measurement.h
-        Test/kernel_power/kernel_power_measurement.c
+#        Test/perf_count.h
+#        Test/perf_count.c
+#        Test/task_times.h
+#        Test/task_times.c
+#        Test/kernel_power/kernel_power_measurement.h
+#        Test/kernel_power/kernel_power_measurement.c
         C/tasks/string_search/bmhasrch.c
         C/tasks/string_search/bmhisrch.c
         C/tasks/string_search/bmhsrch.c
@@ -70,8 +70,8 @@ add_executable(realtime
         C/tasks/fft/fft.h
         C/tasks/crc32/crc.h
         C/tasks/crc32/crc.c
-        Test/task_duration/task_duration.c
-        Test/task_duration/task_duration.h
+#        Test/task_duration/task_duration.c
+#        Test/task_duration/task_duration.h
         C/tasks/sniptype.h
         C/threads/temperature.c
         C/threads/temperature.h
