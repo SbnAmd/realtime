@@ -33,7 +33,8 @@ class Core:
             os.mkfifo(fifo_file_names[core_id*2+1])
         except:
             pass
-        self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR | os.O_NONBLOCK)
+        self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR)
+        # self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR | os.O_NONBLOCK)
         self.tx_fd = os.open(fifo_file_names[core_id*2+1], os.O_RDWR | os.O_NONBLOCK)
         self.timeline = []
 
@@ -65,13 +66,18 @@ class Core:
             data_len = os.read(self.rx_fd, 8)
             length = int().from_bytes(data_len,byteorder='little')
             data = os.read(self.rx_fd, length)
+            if len(data) < length:
+                while len(data) < length:
+                    data += os.read(self.rx_fd, length)
             return json.loads(data.decode('utf-8'))
         except:
             return None
 
     def check_for_ack(self):
         readable, _, _ = select.select([self.rx_fd], [], [], 0)
-        if self.rx_fd in readable:
+        if self.rx_fd in readable:  # sometimes there is some old data in fifo and cause bug
+            if self.task is None:
+                print("sds")
             performance_data = self.get_performance_data()
             self.status = self.IDLE
             self.task.inactivate(performance_data)

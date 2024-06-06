@@ -10,7 +10,7 @@ class Tick:
         self.functions = []
 
     def tick(self):
-        print(Fore.CYAN + f'********************* clock {self.get_tick() * self.period * 1000} *********************')
+        # print(Fore.CYAN + f'********************* clock {self.get_tick() * self.period * 1000} *********************')
         for function in self.functions:
             function()
         self._tick += 1
