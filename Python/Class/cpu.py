@@ -2,6 +2,7 @@ from Python.Class.core import Core
 from Python.Class.task import Task
 from Python.Class.schedule import Scheduler
 from Python.Class.tick import Tick
+from Python.Utils.plot_scheduling import plot
 from colorama import Fore
 
 
@@ -10,7 +11,7 @@ class CPU:
     def __init__(self, core_count, _tasks):
         self.core_count = core_count
         self.clock = Tick(0.01)
-        self.cores = {f'core{i}': Core(i) for i in range(core_count)}
+        self.cores = {f'core{i}': Core(i, self.clock) for i in range(core_count)}
         self.tasks = {
             f'{_tasks[i]["name"]}': Task(_tasks[i]['name'], i, _tasks[i]['execution_time'], _tasks[i]['period'],
                                          self.clock) for i in range(len(_tasks))}
@@ -43,8 +44,17 @@ class CPU:
         for _, core in self.cores.items():
             core.shutdown()
 
+    def plot(self):
+        # [activation_tick, run_tick, inactivation_tick, missed_deadline_tick, core_id, task_name]
+        all_timeline = []
+        for _, task in self.tasks.items():
+            all_timeline.append(task.get_timeline())
+
+        plot(all_timeline)
+
     def run(self):
         print('Starting scheduler')
         self.clock.register_function(self.schedule)
         self.clock.run(30)
         self.shutdown()
+        self.plot()

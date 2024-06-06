@@ -37,11 +37,12 @@ class Task:
             # return inf
             return 1000000
 
-    def run(self):
+    def run(self, core_id: int):
         print(f'hint1, stat = {self.status}')
         if self.status == self.ACTIVE:
             self.status = self.RUNNING
             self.timeline[-1][1] = self.clock.get_tick()
+            self.timeline[-1][-2] = core_id
             print(f'hint2')
             print(Fore.GREEN + f'{self.get_name()} started')
 
@@ -55,7 +56,7 @@ class Task:
             self.status = self.ACTIVE
             self.instance += 1
             self.deadline = self.period + self.clock.get_tick()
-            self.timeline.append([self.clock.get_tick(), 0, 0, -1])
+            self.timeline.append([self.clock.get_tick(), 0, 0, -1, 0, self.get_name()])
             print(Fore.YELLOW + f'{self.get_name()} activated')
 
     def inactivate(self):
@@ -70,3 +71,6 @@ class Task:
         if self.status != self.INACTIVE and self.clock.get_tick() > self.deadline:
             self.timeline[-1][3] = self.clock.get_tick()
             print(Fore.RED + f'{self.get_name()} missed deadline')
+
+    def get_timeline(self):
+        return self.timeline

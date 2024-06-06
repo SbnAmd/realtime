@@ -21,11 +21,12 @@ class Core:
     IDLE = 0
     RUNNING = 1
 
-    def __init__(self, core_id):
+    def __init__(self, core_id, clock):
         global fifo_file_names
         self.status = self.IDLE
         self.core_id = core_id
         self.task = None
+        self.clock = clock
         try:
             os.mkfifo(fifo_file_names[core_id*2])
             os.mkfifo(fifo_file_names[core_id*2+1])
@@ -33,6 +34,7 @@ class Core:
             pass
         self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR | os.O_NONBLOCK)
         self.tx_fd = os.open(fifo_file_names[core_id*2+1], os.O_RDWR | os.O_NONBLOCK)
+        self.timeline = []
 
     def unlink(self):
         try:
@@ -47,15 +49,14 @@ class Core:
         self.unlink()
 
     def run_task(self, task: Task):
-        task.run()
-        print(f'----> task name : {task.get_name()}m stat : {task.status}')
+        task.run(self.core_id)
         self.status = self.RUNNING
         self.task = task
         self.send_task_id(task.task_id)
-        # self.wait_for_ack()
+        self.timeline.append([task.get_name(), self.clock.get_tick(), 0])
 
     def send_task_id(self, task_id):
-        print(f'Core {self.core_id} sent : {bytes(str(task_id), "utf-8")}')
+        # print(f'Core {self.core_id} sent : {bytes(str(task_id), "utf-8")}')
         os.write(self.tx_fd, bytes(str(task_id), 'utf-8'))
 
     def check_for_ack(self):
@@ -65,6 +66,7 @@ class Core:
             self.status = self.IDLE
             self.task.inactivate()
             self.task = None
+            self.timeline[-1][2] = self.clock.get_tick()
             print(Fore.YELLOW + f'Core {self.core_id} acked')
         else:
             print(Fore.LIGHTRED_EX + f'Core {self.core_id} not acked')
