@@ -32,7 +32,10 @@ class Scheduler:
 
     def map_task_to_core(self, free_cores_dict: dict, new_tasks: list):
         shuffle(new_tasks)
-        for core_name, is_free in free_cores_dict.items():
+        items = list(free_cores_dict.items())
+        shuffle(items)
+        shuffled_free_core_dict = dict(items)
+        for core_name, is_free in shuffled_free_core_dict.items():
             if is_free == 1:
                 if len(new_tasks) > 0:
                     self.cpu.cores[core_name].run_task(new_tasks.pop())
@@ -43,9 +46,24 @@ class Scheduler:
         num_free_cores, free_cores_dict = self.cpu.free_cores()
         if num_free_cores > 0:
             # This is where the selective mechanism occur
-            new_count = random.randint(0, num_free_cores)
-            # new_tasks = self.get_new_tasks(new_count)
             new_tasks = self.get_new_tasks(num_free_cores)
+            self.map_task_to_core(free_cores_dict, new_tasks)
+            # print(Fore.CYAN + f'At tick {self.cpu.clock.get_tick()}, scheduled {new_count} tasks')
+
+
+class RandomScheduler(Scheduler):
+
+    def __init__(self, tasks: dict, cpu):
+        super().__init__(tasks, cpu)
+
+    def schedule(self):
+        self.cpu.check_for_ack()
+        self.check_tasks_activation_and_deadline()
+        num_free_cores, free_cores_dict = self.cpu.free_cores()
+        if num_free_cores > 0:
+            # This is where the selective mechanism occur
+            new_count = random.randint(0, num_free_cores)
+            new_tasks = self.get_new_tasks(new_count)
             self.map_task_to_core(free_cores_dict, new_tasks)
             # print(Fore.CYAN + f'At tick {self.cpu.clock.get_tick()}, scheduled {new_count} tasks')
 

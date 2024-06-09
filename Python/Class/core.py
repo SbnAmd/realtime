@@ -3,6 +3,7 @@ import os
 from colorama import Fore
 import select
 import json
+import time
 
 
 fifo_file_names = [
@@ -21,6 +22,12 @@ fifo_file_names = [
 class Core:
     IDLE = 0
     RUNNING = 1
+    temperature_path_list = [
+        "/sys/class/hwmon/hwmon3/temp6_input",
+        "/sys/class/hwmon/hwmon3/temp7_input",
+        "/sys/class/hwmon/hwmon3/temp8_input",
+        "/sys/class/hwmon/hwmon3/temp9_input"
+    ]
 
     def __init__(self, core_id, clock):
         global fifo_file_names
@@ -35,8 +42,9 @@ class Core:
             pass
         self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR)
         # self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR | os.O_NONBLOCK)
-        self.tx_fd = os.open(fifo_file_names[core_id*2+1], os.O_RDWR | os.O_NONBLOCK)
+        self.tx_fd = os.open(fifo_file_names[core_id*2+1], os.O_RDWR)
         self.timeline = []
+        self.total_sent = 0
 
     def unlink(self):
         try:
@@ -55,11 +63,10 @@ class Core:
         self.status = self.RUNNING
         self.task = task
         self.send_task_id(task.task_id)
-        self.timeline.append([task.get_name(), self.clock.get_tick(), 0])
 
     def send_task_id(self, task_id):
         # print(f'Core {self.core_id} sent : {bytes(str(task_id), "utf-8")}')
-        os.write(self.tx_fd, bytes(str(task_id), 'utf-8'))
+        self.total_sent += os.write(self.tx_fd, bytes(str(task_id), 'utf-8'))
 
     def get_performance_data(self):
         try:
@@ -75,17 +82,21 @@ class Core:
 
     def check_for_ack(self):
         readable, _, _ = select.select([self.rx_fd], [], [], 0)
-        if self.rx_fd in readable:  # sometimes there is some old data in fifo and cause bug
-            if self.task is None:
-                print("sds")
+        if self.rx_fd in readable:
             performance_data = self.get_performance_data()
             self.status = self.IDLE
             self.task.inactivate(performance_data)
             self.task = None
-            self.timeline[-1][2] = self.clock.get_tick()
             # print(Fore.YELLOW + f'Core {self.core_id} acked')
         # else:
             # print(Fore.LIGHTRED_EX + f'Core {self.core_id} not acked')
+
+    @classmethod
+    def read_fs_var(self, path):
+        fd = open(path, "r")
+        var = int(fd.readline(32))
+        fd.close()
+        return var
 
     def update_task_status(self):
         pass
@@ -101,5 +112,13 @@ class Core:
         #     print(Fore.LIGHTGREEN_EX + f'Core {self.core_id} : IDLE')
 
     def shutdown(self):
+        time.sleep(0.5)
+        self.check_for_ack()
         os.write(self.tx_fd, bytes(str(-1), 'utf-8'))
+        # time.sleep(0.5)
+
+    def get_temperature(self):
+        return int(self.read_fs_var(self.temperature_path_list[self.core_id]) / 1000)
+
+
 

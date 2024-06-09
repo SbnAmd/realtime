@@ -48,6 +48,7 @@ void* ex_worker(void* arg) {
     size_t length;
     int ret = -1;
     int task_id = 0;
+    int total_received = 0;
 
 
     mkfifo(fifo_tx, 0666);
@@ -56,30 +57,29 @@ void* ex_worker(void* arg) {
     int tx_fd = open(fifo_tx, O_RDWR);
     int rx_fd = open(fifo_rx, O_RDWR);
 
-    printf("Core %d waiting for new schedule\n", core_idx);
+//    printf("Core %d waiting for new schedule\n", core_idx);
 
     while (1){
-
-        ret = read(rx_fd, (void*)&task_id, 1);
-        if (ret <= 0) {
-            printf("Core %d failed to receive data\n", core_idx);
-            exit(EXIT_FAILURE);
+        ret = 0;
+        while (ret < 1){
+            ret += (int)read(rx_fd, (void*)&task_id, 1);
+            total_received += ret;
         }
 
         task_id -= 48;
-        if(task_id < 0)
+        if(task_id < 0){
             break;
-        else{
-            printf("Core %d received task_id : %d, %x\n",core_idx, task_id, task_id);
+        }else{
+//            printf("Core %d received task_id : %d, %x\n",core_idx, task_id, task_id);
             run_task_and_get_perf_event(raw_tasks[task_id], &perf_event, core_idx);
             serialize(&perf_event, root);
         }
+
         json_string = cJSON_PrintUnformatted(root);
         length = strlen(json_string);
         write(tx_fd, &length, sizeof(length));
         write(tx_fd, json_string, strlen(json_string));
     }
-
     close(tx_fd);
     close(rx_fd);
     unlink(fifo_tx); // Remove FIFO file
@@ -101,10 +101,9 @@ int main(){
 
     for(int i = 0; i < NUM_CORES; i++){
         pthread_join(ex_thread[i], NULL);
+        printf("Core %d joined\n", i);
         pthread_attr_destroy(&ex_attrs[i]);
     }
-
-
 
     return 0;
 }
