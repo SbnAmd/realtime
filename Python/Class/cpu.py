@@ -1,6 +1,6 @@
 from Python.Class.core import Core
 from Python.Class.task import Task
-from Python.Class.schedule import Scheduler, RandomScheduler
+from Python.Class.schedule import Scheduler, RandomScheduler, SelectiveScheduler
 from Python.Class.tick import Tick
 from Python.Utils.plot_scheduling import plot
 import matplotlib.pyplot as plt
@@ -16,18 +16,20 @@ class CPU:
     energy_path = "/sys/class/powercap/intel-rapl:0/intel-rapl:0:0/energy_uj"
     freq_path_prefix = "/sys/devices/system/cpu/cpu"
 
-    def __init__(self, core_count, _tasks, random_scheduling=False):
+    def __init__(self, core_count, _tasks, scheduler_idx=0):
         self.core_count = core_count
-        self.random_scheduling = random_scheduling
         self.clock = Tick(0.01)
         self.cores = {f'core{i}': Core(i, self.clock) for i in range(core_count)}
         self.tasks = {
             f'{_tasks[i]["name"]}': Task(_tasks[i]['name'], i, _tasks[i]['execution_time'], _tasks[i]['period'],
                                          self.clock) for i in range(len(_tasks))}
-        if not self.random_scheduling:
+        if scheduler_idx == 0:
             self.scheduler = Scheduler(self.tasks, self)
-        else:
+        elif scheduler_idx == 1:
             self.scheduler = RandomScheduler(self.tasks, self)
+        elif scheduler_idx == 2:
+            self.scheduler = SelectiveScheduler(self.tasks, self)
+
         self.power_timeline = []
         self.temperature_timeline = [[], [], [], []]
 
@@ -45,7 +47,8 @@ class CPU:
 
     def check_for_ack(self):
         for _, core in self.cores.items():
-            core.check_for_ack()
+            if not core.is_free():
+                core.check_for_ack()
 
     @classmethod
     def read_fs_var(self, path):
@@ -72,10 +75,17 @@ class CPU:
         for _, core in self.cores.items():
             self.temperature_timeline[core.core_id].append(core.get_temperature())
 
-    def schedule(self):
+    def get_missed_deadlines(self):
+        cnt = 0
+        for _, task in self.tasks.items():
+            cnt += task.get_missed_deadlines()
+            task.reset_missed_deadlines()
+        return cnt
+
+    def schedule(self, drop=None):
         self.get_power()
         self.get_temperature()
-        self.scheduler.schedule()
+        self.scheduler.schedule(n=drop)
 
     def print_core_status(self):
         for _, core in self.cores.items():
@@ -162,13 +172,15 @@ class CPU:
             freqs.append(self.read_fs_var(path1))
         return freqs
 
-    def get_stat(self):
+    def get_observation(self):
         # todo: return frequencies, free cores, temperatures, power
-        freqs = self.get_frequencies()
+        # freqs = self.get_frequencies()
+        # power = self.power_timeline[-1]
         temps = [core.get_temperature() for _, core in self.cores.items()]
-        free_cores = [core.is_free() for _, core in self.cores.items()]
-        power = self.power_timeline[-1]
-        pass
+        free_cores, _ = self.free_cores()
+        avg_temp = sum(temps)/len(temps)
+        missed_deadlines = self.get_missed_deadlines()
+        return [free_cores, avg_temp, missed_deadlines]
 
     def run(self):
         print('Starting scheduler')
@@ -183,7 +195,4 @@ class CPU:
         combined_list = list(zip(self.power_timeline, self.temperature_timeline[0], self.temperature_timeline[1],
                                  self.temperature_timeline[2], self.temperature_timeline[3], ))
         numpy_array = np.array(combined_list)
-        if self.random_scheduling:
-            np.savetxt("random_scheduling.txt", numpy_array)
-        else:
-            np.savetxt("normal_scheduling.txt", numpy_array)
+        np.savetxt("scheduling.txt", numpy_array)

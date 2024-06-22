@@ -82,7 +82,7 @@ class SelectiveScheduler(Scheduler):
                 new_tasks = self.get_new_tasks(num_free_cores)
                 self.map_task_to_core(free_cores_dict, new_tasks)
             else:
-                new_tasks = self.get_new_tasks(n)
+                new_tasks = self.get_new_tasks(num_free_cores - n)
                 self.map_task_to_core(free_cores_dict, new_tasks)
 
 

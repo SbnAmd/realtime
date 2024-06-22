@@ -24,15 +24,15 @@ void (*raw_tasks[TASK_COUNT-1])()={&qsort_large, &qsort_small,
 
 void serialize(struct PerformanceEvents *events, cJSON *root){
 
-    cJSON_AddNumberToObject(root, "cpu_cycles", events->cpu_cycles);
-    cJSON_AddNumberToObject(root, "cpu_instructions", events->cpu_instructions);
-    cJSON_AddNumberToObject(root, "cpu_cache_misses", events->cpu_cache_misses);
-    cJSON_AddNumberToObject(root, "cpu_cache_references", events->cpu_cache_references);
-    cJSON_AddNumberToObject(root, "cpu_branch_misses", events->cpu_branch_misses);
-    cJSON_AddNumberToObject(root, "cpu_branch_instructions", events->cpu_branch_instructions);
-    cJSON_AddNumberToObject(root, "cpu_page_faults", events->cpu_page_faults);
-    cJSON_AddNumberToObject(root, "cpu_context_switches", events->cpu_context_switches);
-    cJSON_AddNumberToObject(root, "cpu_migrations", events->cpu_migrations);
+//    cJSON_AddNumberToObject(root, "cpu_cycles", events->cpu_cycles);
+//    cJSON_AddNumberToObject(root, "cpu_instructions", events->cpu_instructions);
+//    cJSON_AddNumberToObject(root, "cpu_cache_misses", events->cpu_cache_misses);
+//    cJSON_AddNumberToObject(root, "cpu_cache_references", events->cpu_cache_references);
+//    cJSON_AddNumberToObject(root, "cpu_branch_misses", events->cpu_branch_misses);
+//    cJSON_AddNumberToObject(root, "cpu_branch_instructions", events->cpu_branch_instructions);
+//    cJSON_AddNumberToObject(root, "cpu_page_faults", events->cpu_page_faults);
+//    cJSON_AddNumberToObject(root, "cpu_context_switches", events->cpu_context_switches);
+//    cJSON_AddNumberToObject(root, "cpu_migrations", events->cpu_migrations);
     cJSON_AddNumberToObject(root, "duration", events->duration);
 }
 

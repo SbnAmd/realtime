@@ -27,6 +27,9 @@ class TimeLine:
     def set_activate_tick(self, tick: int):
         self.active_tick = tick
 
+    def get_activate_tick(self):
+        return self.active_tick
+
     def set_run_tick(self, tick: int):
         self.run_tick = tick
 

@@ -18,6 +18,7 @@ class Task:
         self.period = period
         self.clock = clock
         self.deadline = 0
+        self.missed_deadlines = 0
         self.timeline: list[[TimeLine]] = []
 
     def get_name(self):
@@ -74,7 +75,14 @@ class Task:
     def check_missed_deadline(self):
         if self.status != self.INACTIVE and self.clock.get_tick() > self.deadline:
             self.timeline[-1].set_deadline_tick(self.clock.get_tick())
-            # print(Fore.RED + f'{self.get_name()} missed deadline')
+            self.missed_deadlines += 1
+            print(Fore.RED + f'\t{self.get_name()} missed deadline,activated at {self.timeline[-1].get_activate_tick()} , run at {self.timeline[-1].get_run_tick()}, cur tick = {self.clock.get_tick()}, deadline = {self.deadline}')
 
     def get_timeline(self):
         return self.timeline
+
+    def get_missed_deadlines(self):
+        return self.missed_deadlines
+
+    def reset_missed_deadlines(self):
+        self.missed_deadlines = 0
