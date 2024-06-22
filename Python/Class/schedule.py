@@ -68,6 +68,24 @@ class RandomScheduler(Scheduler):
             # print(Fore.CYAN + f'At tick {self.cpu.clock.get_tick()}, scheduled {new_count} tasks')
 
 
+class SelectiveScheduler(Scheduler):
+
+    def __init__(self, tasks: dict, cpu):
+        super().__init__(tasks, cpu)
+
+    def schedule(self, n=None):
+        self.cpu.check_for_ack()
+        self.check_tasks_activation_and_deadline()
+        num_free_cores, free_cores_dict = self.cpu.free_cores()
+        if num_free_cores > 0:
+            if n is None or n > num_free_cores:
+                new_tasks = self.get_new_tasks(num_free_cores)
+                self.map_task_to_core(free_cores_dict, new_tasks)
+            else:
+                new_tasks = self.get_new_tasks(n)
+                self.map_task_to_core(free_cores_dict, new_tasks)
+
+
 if __name__ == "__main__":
     tasks = [2, 0, 3, 3, 7, 3, -1, 20]
     print(tasks.index(3))

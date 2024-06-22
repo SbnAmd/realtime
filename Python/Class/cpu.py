@@ -14,6 +14,7 @@ PREVIOUS_ENERGY = 0
 
 class CPU:
     energy_path = "/sys/class/powercap/intel-rapl:0/intel-rapl:0:0/energy_uj"
+    freq_path_prefix = "/sys/devices/system/cpu/cpu"
 
     def __init__(self, core_count, _tasks, random_scheduling=False):
         self.core_count = core_count
@@ -52,6 +53,12 @@ class CPU:
         var = int(fd.readline(32))
         fd.close()
         return var
+
+    @classmethod
+    def write_fs_var(self, path, value):
+        fd = open(path, "w")
+        var = fd.writelines(value)
+        fd.close()
 
     def get_power(self):
         global PREVIOUS_ENERGY
@@ -130,9 +137,38 @@ class CPU:
             binary_command,
             stdout=subprocess.PIPE,  # Redirect stdout to a pipe
             stderr=subprocess.PIPE,  # Redirect stderr to a pipe
-            stdin=subprocess.PIPE,   # Redirect stdin to a pipe
-            text=True                # Ensure text mode for Python 3.x
+            stdin=subprocess.PIPE,  # Redirect stdin to a pipe
+            text=True  # Ensure text mode for Python 3.x
         )
+
+    def change_frequency(self, freq, core=-1):
+        frequency = freq * 1000000
+        if core > -1:
+            path1 = self.freq_path_prefix + f'{core + 12}/cpufreq/scaling_max_freq'
+            path2 = self.freq_path_prefix + f'{core + 12}/cpufreq/scaling_min_freq'
+            self.write_fs_var(path1, frequency)
+            self.write_fs_var(path2, frequency)
+        else:
+            for i in range(12, 16):
+                path1 = self.freq_path_prefix + f'{i}/cpufreq/scaling_max_freq'
+                path2 = self.freq_path_prefix + f'{i}/cpufreq/scaling_min_freq'
+                self.write_fs_var(path1, frequency)
+                self.write_fs_var(path2, frequency)
+
+    def get_frequencies(self):
+        freqs = []
+        for i in range(12, 16):
+            path1 = self.freq_path_prefix + f'{i}/cpufreq/scaling_max_freq'
+            freqs.append(self.read_fs_var(path1))
+        return freqs
+
+    def get_stat(self):
+        # todo: return frequencies, free cores, temperatures, power
+        freqs = self.get_frequencies()
+        temps = [core.get_temperature() for _, core in self.cores.items()]
+        free_cores = [core.is_free() for _, core in self.cores.items()]
+        power = self.power_timeline[-1]
+        pass
 
     def run(self):
         print('Starting scheduler')
