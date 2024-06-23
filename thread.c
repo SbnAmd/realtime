@@ -23,16 +23,6 @@ void (*raw_tasks[TASK_COUNT-1])()={&qsort_large, &qsort_small,
                                &fft_large, &fft_small, &crc_large, &crc_small};
 
 void serialize(struct PerformanceEvents *events, cJSON *root){
-
-//    cJSON_AddNumberToObject(root, "cpu_cycles", events->cpu_cycles);
-//    cJSON_AddNumberToObject(root, "cpu_instructions", events->cpu_instructions);
-//    cJSON_AddNumberToObject(root, "cpu_cache_misses", events->cpu_cache_misses);
-//    cJSON_AddNumberToObject(root, "cpu_cache_references", events->cpu_cache_references);
-//    cJSON_AddNumberToObject(root, "cpu_branch_misses", events->cpu_branch_misses);
-//    cJSON_AddNumberToObject(root, "cpu_branch_instructions", events->cpu_branch_instructions);
-//    cJSON_AddNumberToObject(root, "cpu_page_faults", events->cpu_page_faults);
-//    cJSON_AddNumberToObject(root, "cpu_context_switches", events->cpu_context_switches);
-//    cJSON_AddNumberToObject(root, "cpu_migrations", events->cpu_migrations);
     cJSON_AddNumberToObject(root, "duration", events->duration);
 }
 
@@ -69,6 +59,7 @@ void* ex_worker(void* arg) {
             ret += (int)read(rx_fd, (void*)buff, 16);
             total_received += ret;
         }
+        clock_gettime(CLOCK_MONOTONIC, &task_start);
         char a = buff[0];
         char b = buff[1];
         task_id = (a - 48)*10 + (b - 48);
@@ -76,22 +67,22 @@ void* ex_worker(void* arg) {
             break;
         }else{
 //            printf("Core %d received task_id : %d, %x\n",core_idx, task_id, task_id);
-            printf("Core[%d], Task[%d], \n",core_idx, task_id);
+            printf("Core[%d], Task[%d] started, issue tick = %s \n",core_idx, task_id, &buff[2]);
             run_task_and_get_perf_event(raw_tasks[task_id], &perf_event, core_idx);
             serialize(&perf_event, root);
 
 
         }
-        clock_gettime(CLOCK_MONOTONIC, &task_start);
+
         json_string = cJSON_PrintUnformatted(root);
         length = strlen(json_string);
         write(tx_fd, &length, sizeof(length));
         write(tx_fd, json_string, strlen(json_string));
         clock_gettime(CLOCK_MONOTONIC, &task_end);
         elapsed_ns = (task_end.tv_sec - task_start.tv_sec) * 1000000000 + (task_end.tv_nsec - task_start.tv_nsec);
-        if(task_id == 11){
-            printf("\t\tDuration = %f\n", elapsed_ns/1000000);
-        }
+        printf("\t\tCore[%d], Task[%d] Finished, issue tick = %s \n",core_idx, task_id, &buff[2]);
+            printf("\t\tDuration = %ld\n", elapsed_ns/1000000);
+
     }
     close(tx_fd);
     close(rx_fd);

@@ -30,10 +30,10 @@ class Core:
     IDLE = 0
     RUNNING = 1
     temperature_path_list = [
-        "/sys/class/hwmon/hwmon2/temp6_input",
-        "/sys/class/hwmon/hwmon2/temp7_input",
-        "/sys/class/hwmon/hwmon2/temp8_input",
-        "/sys/class/hwmon/hwmon2/temp9_input"
+        "/sys/class/hwmon/hwmon3/temp6_input",
+        "/sys/class/hwmon/hwmon3/temp7_input",
+        "/sys/class/hwmon/hwmon3/temp8_input",
+        "/sys/class/hwmon/hwmon3/temp9_input"
     ]
 
     def __init__(self, core_id, clock):
@@ -92,7 +92,6 @@ class Core:
             return None
 
     def check_for_ack(self):
-        start_time = time.time()  # Record the start time
         readable, _, _ = select.select([self.rx_fd], [], [], 0)
         if self.rx_fd in readable:
             performance_data = self.get_performance_data()
@@ -101,9 +100,7 @@ class Core:
             self.task = None
         elif self.task.get_name() == "CRCLargeTask":
             print(Fore.BLUE + f'No ack')
-        end_time = time.time()  # Record the end time
-        elapsed_time = end_time - start_time  # Calculate the elapsed time
-        print(Fore.YELLOW + f'Core {self.core_id} ack took {elapsed_time: 0.6f}')
+
 
     @classmethod
     def read_fs_var(self, path):

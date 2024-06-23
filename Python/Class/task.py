@@ -61,7 +61,8 @@ class Task:
             tl.set_activate_tick(self.clock.get_tick())
             tl.set_task_name(self.get_name())
             self.timeline.append(deepcopy(tl))
-            # print(Fore.YELLOW + f'{self.get_name()} activated')
+            if self.get_name() == "CRCLargeTask":
+                print(Fore.CYAN + f'{self.get_name()} activated at tick {self.clock.get_tick()}')
 
     def inactivate(self, performance_data):
         if self.status == self.RUNNING:
