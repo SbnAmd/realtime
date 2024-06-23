@@ -82,14 +82,14 @@ tasks = [
      'execution_time': 1
      },
 
-    {'name': "CRCLargeTask",
-     'period': 11,
-     'execution_time': 6
-     },
-
-    {'name': "CRCSmallTask",
-     'period': 6,
-     'execution_time': 1
-     },
+    # {'name': "CRCLargeTask",
+    #  'period': 12,
+    #  'execution_time': 6
+    #  },
+    #
+    # {'name': "CRCSmallTask",
+    #  'period': 6,
+    #  'execution_time': 1
+    #  },
 
 ]

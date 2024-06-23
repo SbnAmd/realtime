@@ -68,7 +68,8 @@ class Task:
             self.status = self.INACTIVE
             self.timeline[-1].set_inactive_tick(self.clock.get_tick())
             self.timeline[-1].set_performance_data(performance_data)
-            # print(Fore.CYAN + f'{self.get_name()} inactivated')
+            if self.get_name() == "CRCLargeTask":
+                print(Fore.CYAN + f'{self.get_name()} inactivated at tick {self.clock.get_tick()}')
         # else:
             # print(Fore.LIGHTRED_EX + f'{self.get_name()} wants to inactivate but its in {self.status} mode')
 

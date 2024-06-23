@@ -6,6 +6,7 @@ from Python.Utils.plot_scheduling import plot
 import matplotlib.pyplot as plt
 import numpy as np
 import subprocess
+import time
 from colorama import Fore
 
 CYCLES_TO_RUN = 9000
@@ -85,7 +86,9 @@ class CPU:
     def schedule(self, drop=None):
         self.get_power()
         self.get_temperature()
-        self.scheduler.schedule(n=drop)
+        self.scheduler.schedule()
+        # time.sleep(2000000)
+        # self.scheduler.schedule(n=drop)
 
     def print_core_status(self):
         for _, core in self.cores.items():
@@ -184,7 +187,7 @@ class CPU:
 
     def run(self):
         print('Starting scheduler')
-        self.start_cores()
+        # self.start_cores()
         self.clock.register_function(self.schedule)
         self.clock.run(CYCLES_TO_RUN)
         self.shutdown()

@@ -49,6 +49,10 @@ void* ex_worker(void* arg) {
     int ret = -1;
     int task_id = 0;
     int total_received = 0;
+    char buff[16] = {'\0'};
+    struct timespec start, end;
+    struct timespec task_start, task_end;
+    long task_duration_ns, total_ns, elapsed_ns;
 
 
     mkfifo(fifo_tx, 0666);
@@ -61,24 +65,33 @@ void* ex_worker(void* arg) {
 
     while (1){
         ret = 0;
-        while (ret < 1){
-            ret += (int)read(rx_fd, (void*)&task_id, 1);
+        while (ret < 16){
+            ret += (int)read(rx_fd, (void*)buff, 16);
             total_received += ret;
         }
-
-        task_id -= 48;
+        char a = buff[0];
+        char b = buff[1];
+        task_id = (a - 48)*10 + (b - 48);
         if(task_id < 0){
             break;
         }else{
 //            printf("Core %d received task_id : %d, %x\n",core_idx, task_id, task_id);
+            printf("Core[%d], Task[%d], \n",core_idx, task_id);
             run_task_and_get_perf_event(raw_tasks[task_id], &perf_event, core_idx);
             serialize(&perf_event, root);
-        }
 
+
+        }
+        clock_gettime(CLOCK_MONOTONIC, &task_start);
         json_string = cJSON_PrintUnformatted(root);
         length = strlen(json_string);
         write(tx_fd, &length, sizeof(length));
         write(tx_fd, json_string, strlen(json_string));
+        clock_gettime(CLOCK_MONOTONIC, &task_end);
+        elapsed_ns = (task_end.tv_sec - task_start.tv_sec) * 1000000000 + (task_end.tv_nsec - task_start.tv_nsec);
+        if(task_id == 11){
+            printf("\t\tDuration = %f\n", elapsed_ns/1000000);
+        }
     }
     close(tx_fd);
     close(rx_fd);

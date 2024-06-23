@@ -19,14 +19,21 @@ fifo_file_names = [
 ]
 
 
+def decode_digit(number):
+    if number < 10:
+        return f'0{number}'
+    elif number > 9:
+        return f'1{number % 10}'
+
+
 class Core:
     IDLE = 0
     RUNNING = 1
     temperature_path_list = [
-        "/sys/class/hwmon/hwmon3/temp6_input",
-        "/sys/class/hwmon/hwmon3/temp7_input",
-        "/sys/class/hwmon/hwmon3/temp8_input",
-        "/sys/class/hwmon/hwmon3/temp9_input"
+        "/sys/class/hwmon/hwmon2/temp6_input",
+        "/sys/class/hwmon/hwmon2/temp7_input",
+        "/sys/class/hwmon/hwmon2/temp8_input",
+        "/sys/class/hwmon/hwmon2/temp9_input"
     ]
 
     def __init__(self, core_id, clock):
@@ -66,7 +73,11 @@ class Core:
 
     def send_task_id(self, task_id):
         # print(f'Core {self.core_id} sent : {bytes(str(task_id), "utf-8")}')
-        self.total_sent += os.write(self.tx_fd, bytes(str(task_id), 'utf-8'))
+        data = bytearray(decode_digit(task_id) + str(self.clock.get_tick()), 'utf-8')
+        len_pad = 16 - len(data)
+        data.extend(b'\x00' * len_pad)
+        self.total_sent += os.write(self.tx_fd, data)
+        # print(Fore.YELLOW + f'Core[{self.core_id}] sent task[{task_id}], data = {data}')
 
     def get_performance_data(self):
         try:
@@ -81,15 +92,18 @@ class Core:
             return None
 
     def check_for_ack(self):
+        start_time = time.time()  # Record the start time
         readable, _, _ = select.select([self.rx_fd], [], [], 0)
         if self.rx_fd in readable:
             performance_data = self.get_performance_data()
             self.status = self.IDLE
             self.task.inactivate(performance_data)
             self.task = None
-            # print(Fore.YELLOW + f'Core {self.core_id} acked')
-        # else:
-            # print(Fore.LIGHTRED_EX + f'Core {self.core_id} not acked')
+        elif self.task.get_name() == "CRCLargeTask":
+            print(Fore.BLUE + f'No ack')
+        end_time = time.time()  # Record the end time
+        elapsed_time = end_time - start_time  # Calculate the elapsed time
+        print(Fore.YELLOW + f'Core {self.core_id} ack took {elapsed_time: 0.6f}')
 
     @classmethod
     def read_fs_var(self, path):

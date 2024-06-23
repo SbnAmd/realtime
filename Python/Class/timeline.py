@@ -1,10 +1,10 @@
 
 class TimeLine:
     temperature_path_list = [
-        "/sys/class/hwmon/hwmon3/temp6_input",
-        "/sys/class/hwmon/hwmon3/temp7_input",
-        "/sys/class/hwmon/hwmon3/temp8_input",
-        "/sys/class/hwmon/hwmon3/temp9_input"
+        "/sys/class/hwmon/hwmon2/temp6_input",
+        "/sys/class/hwmon/hwmon2/temp7_input",
+        "/sys/class/hwmon/hwmon2/temp8_input",
+        "/sys/class/hwmon/hwmon2/temp9_input"
     ]
     frequency_path_list = [
         "/sys/devices/system/cpu/cpu12/cpufreq/scaling_cur_freq",
