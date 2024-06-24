@@ -13,7 +13,7 @@ char* fifo_file_names[] = {
         "/tmp/core3_tx",
         "/tmp/core3_rx",
         "/tmp/core4_tx",
-        "/tmp/core5_rx",
+        "/tmp/core4_rx",
 
 };
 
@@ -61,22 +61,34 @@ void* ex_worker(void* arg) {
     mkfifo(fifo_tx, 0666);
     mkfifo(fifo_rx, 0666);
 
-    int tx_fd = open(fifo_tx, O_RDWR);
-    int rx_fd = open(fifo_rx, O_RDWR);
-//    set_nonblocking(tx_fd);
-//    set_nonblocking(rx_fd);
+    int tx_fd = open(fifo_tx, O_WRONLY);
 
-//    printf("Core %d waiting for new schedule\n", core_idx);
+    int rx_fd = open(fifo_rx, O_RDONLY | O_NONBLOCK);
+    if (rx_fd == -1) {
+        perror("Failed to open FIFO");
+        exit(1);
+    }
 
     while (1){
         bytes_read = 0;
         while (bytes_read < 16){
-            bytes_read += (int)read(rx_fd, (void*)buff, 16);
+            bytes_read += read(rx_fd, (void*)buff, 16);
             if (bytes_read == -1 && errno == EAGAIN) {
-                // No data available, perform nop
+                usleep(400);
                 __asm__ __volatile__("nop");
-                usleep(10000);
+                usleep(400);
+                __asm__ __volatile__("nop");
+                usleep(400);
+                __asm__ __volatile__("nop");
+                usleep(400);
+                __asm__ __volatile__("nop");
+                usleep(400);
+                __asm__ __volatile__("nop");
+
+
+                bytes_read = 0;
             }
+
         }
         clock_gettime(CLOCK_MONOTONIC, &task_start);
         char a = buff[0];

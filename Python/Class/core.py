@@ -1,6 +1,7 @@
 from Python.Class.task import Task
 import os
 from colorama import Fore
+import errno
 import select
 import json
 import time
@@ -14,7 +15,7 @@ fifo_file_names = [
     "/tmp/core3_tx",
     "/tmp/core3_rx",
     "/tmp/core4_tx",
-    "/tmp/core5_rx",
+    "/tmp/core4_rx",
 
 ]
 
@@ -47,11 +48,15 @@ class Core:
         #     os.mkfifo(fifo_file_names[core_id*2+1])
         # except:
         #     pass
-
-        self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR)
-        # self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR | os.O_NONBLOCK)
-        print("in core init")
-        self.tx_fd = os.open(fifo_file_names[core_id*2+1], os.O_RDWR)
+        self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDONLY)
+        try:
+            self.tx_fd = os.open(fifo_file_names[core_id*2+1], os.O_WRONLY)
+        except OSError as e:
+            if e.errno == errno.ENXIO:
+                print(f"No reader available for FIFO at {fifo_file_names[core_id*2+1]}")
+            else:
+                print(f"Failed to open FIFO: {e}")
+                exit(1)
         self.timeline = []
         self.total_sent = 0
 
@@ -63,8 +68,10 @@ class Core:
             pass
 
     def __del__(self):
-        os.close(self.rx_fd)
-        os.close(self.tx_fd)
+        if self.tx_fd:
+            os.close(self.rx_fd)
+        if self.rx_fd:
+            os.close(self.tx_fd)
         self.unlink()
 
     def run_task(self, task: Task):
