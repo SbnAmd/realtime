@@ -61,16 +61,16 @@ class Task:
             tl.set_activate_tick(self.clock.get_tick())
             tl.set_task_name(self.get_name())
             self.timeline.append(deepcopy(tl))
-            if self.get_name() == "CRCLargeTask":
-                print(Fore.CYAN + f'{self.get_name()} activated at tick {self.clock.get_tick()}')
+            # if self.get_name() == "CRCLargeTask":
+            #     print(Fore.CYAN + f'{self.get_name()} activated at tick {self.clock.get_tick()}')
 
     def inactivate(self, performance_data):
         if self.status == self.RUNNING:
             self.status = self.INACTIVE
             self.timeline[-1].set_inactive_tick(self.clock.get_tick())
             self.timeline[-1].set_performance_data(performance_data)
-            if self.get_name() == "CRCLargeTask":
-                print(Fore.CYAN + f'{self.get_name()} inactivated at tick {self.clock.get_tick()}')
+            # if self.get_name() == "CRCLargeTask":
+            #     print(Fore.CYAN + f'{self.get_name()} inactivated at tick {self.clock.get_tick()}')
         # else:
             # print(Fore.LIGHTRED_EX + f'{self.get_name()} wants to inactivate but its in {self.status} mode')
 

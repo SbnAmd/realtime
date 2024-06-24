@@ -98,9 +98,6 @@ class Core:
             self.status = self.IDLE
             self.task.inactivate(performance_data)
             self.task = None
-        elif self.task.get_name() == "CRCLargeTask":
-            print(Fore.BLUE + f'No ack')
-
 
     @classmethod
     def read_fs_var(self, path):

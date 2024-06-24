@@ -9,7 +9,7 @@ import subprocess
 import time
 from colorama import Fore
 
-CYCLES_TO_RUN = 9000
+CYCLES_TO_RUN = 3000
 PREVIOUS_ENERGY = 0
 
 
@@ -31,8 +31,8 @@ class CPU:
         elif scheduler_idx == 2:
             self.scheduler = SelectiveScheduler(self.tasks, self)
 
-        self.power_timeline = []
-        self.temperature_timeline = [[], [], [], []]
+        self.power_timeline = bytearray()
+        self.temperature_timeline = [bytearray(), bytearray(), bytearray(), bytearray()]
 
     def free_cores(self):
         num_free_cores = 0
@@ -69,7 +69,10 @@ class CPU:
         energy_uj = self.read_fs_var(self.energy_path)
         if PREVIOUS_ENERGY != 0:
             power = (energy_uj - PREVIOUS_ENERGY) / 10000
-            self.power_timeline.append(power)
+            if power > 255:
+                self.power_timeline.append(254)
+            else:
+                self.power_timeline.append(int(power))
         PREVIOUS_ENERGY = energy_uj
 
     def get_temperature(self):
@@ -86,9 +89,7 @@ class CPU:
     def schedule(self, drop=None):
         self.get_power()
         self.get_temperature()
-        self.scheduler.schedule()
-        # time.sleep(2000000)
-        # self.scheduler.schedule(n=drop)
+        self.scheduler.schedule(n=drop)
 
     def print_core_status(self):
         for _, core in self.cores.items():

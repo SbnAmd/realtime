@@ -17,10 +17,11 @@ char* fifo_file_names[] = {
 };
 
 
-void (*raw_tasks[TASK_COUNT-1])()={&qsort_large, &qsort_small,
+void (*raw_tasks[TASK_COUNT-1])()={
                                &bitcnts_large, &bitcnts_small, &basicmath_large,
                                &basicmath_small, &string_search_large, &string_search_small,
-                               &fft_large, &fft_small, &crc_large, &crc_small};
+                               &fft_large, &fft_small, &crc_large, &crc_small,
+                               &qsort_large, &qsort_small,};
 
 void serialize(struct PerformanceEvents *events, cJSON *root){
     cJSON_AddNumberToObject(root, "duration", events->duration);
