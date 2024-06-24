@@ -2,6 +2,7 @@
 // Created by root on 6/4/24.
 //
 #include "C/realtime.h"
+#include <errno.h>
 
 
 char* fifo_file_names[] = {
@@ -27,6 +28,16 @@ void serialize(struct PerformanceEvents *events, cJSON *root){
     cJSON_AddNumberToObject(root, "duration", events->duration);
 }
 
+void set_nonblocking(int fd) {
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1) {
+        perror("fcntl get flags");
+        return;
+    }
+    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
+        perror("fcntl set non-blocking");
+    }
+}
 
 void* ex_worker(void* arg) {
 
@@ -43,7 +54,8 @@ void* ex_worker(void* arg) {
     char buff[16] = {'\0'};
     struct timespec start, end;
     struct timespec task_start, task_end;
-    long task_duration_ns, total_ns, elapsed_ns;
+    long elapsed_ns;
+    ssize_t bytes_read;
 
 
     mkfifo(fifo_tx, 0666);
@@ -51,14 +63,20 @@ void* ex_worker(void* arg) {
 
     int tx_fd = open(fifo_tx, O_RDWR);
     int rx_fd = open(fifo_rx, O_RDWR);
+//    set_nonblocking(tx_fd);
+//    set_nonblocking(rx_fd);
 
 //    printf("Core %d waiting for new schedule\n", core_idx);
 
     while (1){
-        ret = 0;
-        while (ret < 16){
-            ret += (int)read(rx_fd, (void*)buff, 16);
-            total_received += ret;
+        bytes_read = 0;
+        while (bytes_read < 16){
+            bytes_read += (int)read(rx_fd, (void*)buff, 16);
+            if (bytes_read == -1 && errno == EAGAIN) {
+                // No data available, perform nop
+                __asm__ __volatile__("nop");
+                usleep(10000);
+            }
         }
         clock_gettime(CLOCK_MONOTONIC, &task_start);
         char a = buff[0];

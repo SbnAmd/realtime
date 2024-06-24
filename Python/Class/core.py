@@ -42,13 +42,15 @@ class Core:
         self.core_id = core_id
         self.task = None
         self.clock = clock
-        try:
-            os.mkfifo(fifo_file_names[core_id*2])
-            os.mkfifo(fifo_file_names[core_id*2+1])
-        except:
-            pass
+        # try:
+        #     os.mkfifo(fifo_file_names[core_id*2])
+        #     os.mkfifo(fifo_file_names[core_id*2+1])
+        # except:
+        #     pass
+
         self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR)
         # self.rx_fd = os.open(fifo_file_names[core_id*2], os.O_RDWR | os.O_NONBLOCK)
+        print("in core init")
         self.tx_fd = os.open(fifo_file_names[core_id*2+1], os.O_RDWR)
         self.timeline = []
         self.total_sent = 0
