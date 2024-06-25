@@ -9,7 +9,7 @@ import subprocess
 import time
 from colorama import Fore
 
-CYCLES_TO_RUN = 3000
+CYCLES_TO_RUN = 9000
 PREVIOUS_ENERGY = 0
 
 
@@ -86,7 +86,7 @@ class CPU:
             task.reset_missed_deadlines()
         return cnt
 
-    def schedule(self, drop=None):
+    def schedule(self, drop=2):
         self.get_power()
         self.get_temperature()
         self.scheduler.schedule(n=drop)
@@ -199,4 +199,4 @@ class CPU:
         combined_list = list(zip(self.power_timeline, self.temperature_timeline[0], self.temperature_timeline[1],
                                  self.temperature_timeline[2], self.temperature_timeline[3], ))
         numpy_array = np.array(combined_list)
-        np.savetxt("scheduling.txt", numpy_array)
+        np.savetxt("scheduling_2d.txt", numpy_array)

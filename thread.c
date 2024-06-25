@@ -63,7 +63,8 @@ void* ex_worker(void* arg) {
 
     int tx_fd = open(fifo_tx, O_WRONLY);
 
-    int rx_fd = open(fifo_rx, O_RDONLY | O_NONBLOCK);
+//    int rx_fd = open(fifo_rx, O_RDONLY | O_NONBLOCK);
+    int rx_fd = open(fifo_rx, O_RDONLY );
     if (rx_fd == -1) {
         perror("Failed to open FIFO");
         exit(1);
@@ -73,21 +74,21 @@ void* ex_worker(void* arg) {
         bytes_read = 0;
         while (bytes_read < 16){
             bytes_read += read(rx_fd, (void*)buff, 16);
-            if (bytes_read == -1 && errno == EAGAIN) {
-                usleep(400);
-                __asm__ __volatile__("nop");
-                usleep(400);
-                __asm__ __volatile__("nop");
-                usleep(400);
-                __asm__ __volatile__("nop");
-                usleep(400);
-                __asm__ __volatile__("nop");
-                usleep(400);
-                __asm__ __volatile__("nop");
-
-
-                bytes_read = 0;
-            }
+//            if (bytes_read == -1 && errno == EAGAIN) {
+//                usleep(400);
+//                __asm__ __volatile__("nop");
+//                usleep(400);
+//                __asm__ __volatile__("nop");
+//                usleep(400);
+//                __asm__ __volatile__("nop");
+//                usleep(400);
+//                __asm__ __volatile__("nop");
+//                usleep(400);
+//                __asm__ __volatile__("nop");
+//
+//
+//                bytes_read = 0;
+//            }
 
         }
         clock_gettime(CLOCK_MONOTONIC, &task_start);
