@@ -8,7 +8,7 @@ long perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
                    group_fd, flags);
 }
 
-void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* perf_event, int core){
+void get_perf_event(int core, long wait){
 
     int cpu_cycles_fd, cpu_instructions_fd, cpu_cache_misses_fd;
     int cpu_cache_references_fd, cpu_branch_misses_fd, cpu_branch_instructions_fd;
@@ -17,6 +17,18 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     struct perf_event_attr cpu_cycles_pe, cpu_instructions_pe, cpu_cache_misses_pe;
     struct perf_event_attr cpu_cache_references_pe, cpu_branch_misses_pe, cpu_branch_instructions_pe;
     struct perf_event_attr cpu_page_faults_pe, cpu_context_switches_pe, cpu_migrations_pe;
+
+
+    long cpu_cycles;
+    long cpu_instructions;
+    long cpu_cache_misses;
+    long cpu_cache_references;
+    long cpu_branch_misses;
+    long cpu_branch_instructions;
+    long cpu_page_faults;
+    long cpu_context_switches;
+    long cpu_migrations;
+    long duration;
 
     struct timespec start, end;
     struct timespec task_start, task_end;
@@ -191,12 +203,9 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     ioctl(cpu_context_switches_fd, PERF_EVENT_IOC_ENABLE, 0);
     ioctl(cpu_migrations_fd, PERF_EVENT_IOC_ENABLE, 0);
 
-    // Run task
-    clock_gettime(CLOCK_MONOTONIC, &task_start);
 
-    task();
+    usleep(wait);
 
-    clock_gettime(CLOCK_MONOTONIC, &task_end);
 
     // Disable events
     ioctl(cpu_cycles_fd, PERF_EVENT_IOC_DISABLE, 0);
@@ -209,20 +218,20 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     ioctl(cpu_context_switches_fd, PERF_EVENT_IOC_DISABLE, 0);
     ioctl(cpu_migrations_fd, PERF_EVENT_IOC_DISABLE, 0);
 
-    perf_event->core_idx = core;
-    read(cpu_cycles_fd, &perf_event->cpu_cycles, sizeof(long long));
-    read(cpu_instructions_fd, &perf_event->cpu_instructions, sizeof(long long));
-    read(cpu_cache_misses_fd, &perf_event->cpu_cache_misses, sizeof(long long));
-    read(cpu_cache_references_fd, &perf_event->cpu_cache_references, sizeof(long long));
-    read(cpu_branch_misses_fd, &perf_event->cpu_branch_misses, sizeof(long long));
-    read(cpu_branch_instructions_fd, &perf_event->cpu_branch_instructions, sizeof(long long));
-    read(cpu_page_faults_fd, &perf_event->cpu_page_faults, sizeof(long long));
-    read(cpu_context_switches_fd, &perf_event->cpu_context_switches, sizeof(long long));
-    read(cpu_migrations_fd, &perf_event->cpu_migrations, sizeof(long long));
+
+    read(cpu_cycles_fd, &cpu_cycles, sizeof(long long));
+    read(cpu_instructions_fd, &cpu_instructions, sizeof(long long));
+    read(cpu_cache_misses_fd, &cpu_cache_misses, sizeof(long long));
+    read(cpu_cache_references_fd, &cpu_cache_references, sizeof(long long));
+    read(cpu_branch_misses_fd, &cpu_branch_misses, sizeof(long long));
+    read(cpu_branch_instructions_fd, &cpu_branch_instructions, sizeof(long long));
+    read(cpu_page_faults_fd, &cpu_page_faults, sizeof(long long));
+    read(cpu_context_switches_fd, &cpu_context_switches, sizeof(long long));
+    read(cpu_migrations_fd, &cpu_migrations, sizeof(long long));
     clock_gettime(CLOCK_MONOTONIC, &end);
     // Time calc
     elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-    perf_event->duration = elapsed_ns / 1000000.0; // Elapsed time in milliseconds
+    duration = elapsed_ns / 1000000; // Elapsed time in milliseconds
 
 
     close(cpu_cycles_fd);
@@ -234,8 +243,16 @@ void run_task_and_get_perf_event(FunctionPtr task, struct PerformanceEvents* per
     close(cpu_page_faults_fd);
     close(cpu_context_switches_fd);
     close(cpu_migrations_fd);
-//    clock_gettime(CLOCK_MONOTONIC, &end);
-//    total_ns = (end.tv_sec-start.tv_sec) * 1000000000 + (end.tv_nsec-start.tv_nsec);
-//    task_duration_ns = (task_end.tv_sec-task_start.tv_sec) * 1000000000 + (task_end.tv_nsec-task_start.tv_nsec);
-//    printf("IOCTL duration = %f, task duration = %f\n", (total_ns- task_duration_ns)/1000000.0, task_duration_ns/1000000.0);
+
+    printf("cpu_cycles : %ld\n", cpu_cycles);
+    printf("cpu_instructions : %ld\n", cpu_instructions);
+    printf("cpu_cache_misses : %ld\n", cpu_cache_misses);
+    printf("cpu_cache_references : %ld\n", cpu_cache_references);
+    printf("cpu_branch_misses : %ld\n", cpu_branch_misses);
+    printf("cpu_branch_instructions : %ld\n", cpu_branch_instructions);
+    printf("cpu_page_faults : %ld\n", cpu_page_faults);
+    printf("cpu_context_switches : %ld\n", cpu_context_switches);
+    printf("cpu_migrations : %ld\n", cpu_migrations);
+    printf("duration : %ld\n", duration);
+
 }
