@@ -13,6 +13,8 @@ add_executable(realtime
         benchmarks/src/simd_mm.c
         benchmarks/src/simd_dot.c
         benchmarks/src/simd_image_conv.c
+        benchmarks/perf_monitor.c
+        benchmarks/perf_monitor.h
 
 )
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse4.1 -mavx2")
