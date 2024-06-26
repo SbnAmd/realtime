@@ -1,7 +1,7 @@
 
 #include "benchmark.h"
 
-//#define INPUT_SIZE 1000000
+#define INPUT_SIZE 1000000
 
 void run_length_encoding(const char *input, char *output) {
     int count = 1;
@@ -19,7 +19,7 @@ void run_length_encoding(const char *input, char *output) {
     sprintf(&output[j], "%c%d", current, count);
 }
 
-void rle(long INPUT_SIZE) {
+void rle() {
     char *input = (char *)malloc(INPUT_SIZE + 1);
     char *output = (char *)malloc(2 * INPUT_SIZE);
 
@@ -34,6 +34,6 @@ void rle(long INPUT_SIZE) {
 
     free(input);
     free(output);
-    printf("Run-length encoding completed for input size %d.\n", INPUT_SIZE);
+//    printf("Run-length encoding completed for input size %d.\n", INPUT_SIZE);
 
 }

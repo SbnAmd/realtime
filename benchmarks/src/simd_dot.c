@@ -3,7 +3,7 @@
 
 
 
-//#define VECTOR_SIZE 1024 * 1024  // Size of the vectors
+#define VECTOR_SIZE 1024 * 1024  // Size of the vectors
 
 float avx_dot_product(float *a, float *b, int size) {
     __m256 sum = _mm256_setzero_ps();
@@ -19,7 +19,7 @@ float avx_dot_product(float *a, float *b, int size) {
     return result[0] + result[1] + result[2] + result[3] + result[4] + result[5] + result[6] + result[7];
 }
 
-void simd_dot(long VECTOR_SIZE) {
+void simd_dot() {
     float *a = (float *)_mm_malloc(VECTOR_SIZE * sizeof(float), 32);
     float *b = (float *)_mm_malloc(VECTOR_SIZE * sizeof(float), 32);
 
@@ -32,7 +32,7 @@ void simd_dot(long VECTOR_SIZE) {
     // Perform SIMD dot product
     float dot_product = avx_dot_product(a, b, VECTOR_SIZE);
 
-    printf("AVX dot product completed: %f\n", dot_product);
+//    printf("AVX dot product completed: %f\n", dot_product);
 
     _mm_free(a);
     _mm_free(b);

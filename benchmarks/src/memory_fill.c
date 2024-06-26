@@ -2,9 +2,9 @@
 #include "benchmark.h"
 
 
-//#define ARRAY_SIZE 100000000  // Size of array for memory fill
+#define ARRAY_SIZE 100000000  // Size of array for memory fill
 
-void memory_fill(long ARRAY_SIZE) {
+void memory_fill() {
     int *array = (int *)malloc(ARRAY_SIZE * sizeof(int));
     if (array == NULL) {
         printf("Failed to allocate memory.\n");
@@ -17,5 +17,5 @@ void memory_fill(long ARRAY_SIZE) {
     }
 
     free(array);
-    printf("Memory fill test completed for array size %d.\n", ARRAY_SIZE);
+//    printf("Memory fill test completed for array size %d.\n", ARRAY_SIZE);
 }

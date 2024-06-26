@@ -5,9 +5,9 @@
 #include "benchmark.h"
 
 
+#define limit 100000
 
-
-void calculate_primes(long limit) {
+void calculate_primes() {
     int count = 0;
     for (int num = 2; num <= limit; num++) {
         bool is_prime = true;
@@ -21,5 +21,5 @@ void calculate_primes(long limit) {
             count++;
         }
     }
-    printf("Found %d prime numbers up to %ld.\n", count, limit);
+//    printf("Found %d prime numbers up to %ld.\n", count, limit);
 }

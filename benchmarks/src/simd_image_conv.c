@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <xmmintrin.h>  // Header for SSE intrinsics
 
-//#define WIDTH 1024
-//#define HEIGHT 1024
+#define WIDTH 1024
+#define HEIGHT 1024
 #define KERNEL_SIZE 3
 
 void sse_image_convolution(float *image, float *kernel, float *output, int width, int height) {
@@ -29,7 +29,7 @@ void sse_image_convolution(float *image, float *kernel, float *output, int width
     }
 }
 
-void simd_sse(long WIDTH, long HEIGHT) {
+void simd_sse() {
     float *image = (float *)_mm_malloc(WIDTH * HEIGHT * sizeof(float), 16);
     float *output = (float *)_mm_malloc(WIDTH * HEIGHT * sizeof(float), 16);
     float kernel[KERNEL_SIZE * KERNEL_SIZE] = {
@@ -46,7 +46,7 @@ void simd_sse(long WIDTH, long HEIGHT) {
     // Perform SIMD image convolution
     sse_image_convolution(image, kernel, output, WIDTH, HEIGHT);
 
-    printf("SSE image convolution completed.\n");
+//    printf("SSE image convolution completed.\n");
 
     _mm_free(image);
     _mm_free(output);

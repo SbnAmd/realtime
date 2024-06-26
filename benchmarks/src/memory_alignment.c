@@ -2,9 +2,9 @@
 #include "benchmark.h"
 
 
-//#define ARRAY_SIZE 1000000  // Size of array for memory alignment test
+#define ARRAY_SIZE 1000000  // Size of array for memory alignment test
 
-void memory_alignment_test(long ARRAY_SIZE) {
+void memory_alignment_test() {
     char *array = (char *)malloc(ARRAY_SIZE * sizeof(char));
 
     // Allocate memory with different alignments
@@ -15,5 +15,5 @@ void memory_alignment_test(long ARRAY_SIZE) {
     }
 
     free(array);
-    printf("Memory alignment test completed for array size %d.\n", ARRAY_SIZE);
+//    printf("Memory alignment test completed for array size %d.\n", ARRAY_SIZE);
 }

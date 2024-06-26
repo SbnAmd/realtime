@@ -2,7 +2,7 @@
 #include "benchmark.h"
 
 
-//#define VECTOR_SIZE 1024 * 1024 // Size of the vectors
+#define VECTOR_SIZE 1024 * 1024 // Size of the vectors
 
 void sse_vector_addition(float *a, float *b, float *result, int size) {
     for (int i = 0; i < size; i += 4) {
@@ -18,7 +18,7 @@ void sse_vector_addition(float *a, float *b, float *result, int size) {
     }
 }
 
-void simd_vec_add(long VECTOR_SIZE) {
+void simd_vec_add() {
     float *a = (float *)_mm_malloc(VECTOR_SIZE * sizeof(float), 16);
     float *b = (float *)_mm_malloc(VECTOR_SIZE * sizeof(float), 16);
     float *result = (float *)_mm_malloc(VECTOR_SIZE * sizeof(float), 16);
@@ -32,7 +32,7 @@ void simd_vec_add(long VECTOR_SIZE) {
     // Perform SIMD vector addition
     sse_vector_addition(a, b, result, VECTOR_SIZE);
 
-    printf("SSE vector addition completed.\n");
+//    printf("SSE vector addition completed.\n");
 
     _mm_free(a);
     _mm_free(b);

@@ -1,7 +1,7 @@
 
 #include "benchmark.h"
 
-//#define ARRAY_SIZE 1000000  // Array size for sorting
+#define ARRAY_SIZE 1000000  // Array size for sorting
 
 void quicksort(int *array, int low, long high) {
     if (low < high) {
@@ -25,7 +25,7 @@ void quicksort(int *array, int low, long high) {
     }
 }
 
-void quick_sort(long ARRAY_SIZE) {
+void quick_sort() {
     int *array = (int *)malloc(ARRAY_SIZE * sizeof(int));
 
     // Fill the array with random values
@@ -37,5 +37,5 @@ void quick_sort(long ARRAY_SIZE) {
     quicksort(array, 0, ARRAY_SIZE - 1);
 
     free(array);
-    printf("Quicksort completed for an array size of %d.\n", ARRAY_SIZE);
+//    printf("Quicksort completed for an array size of %d.\n", ARRAY_SIZE);
 }

@@ -1,9 +1,9 @@
 
 #include "benchmark.h"
 
-//#define ARRAY_SIZE 100000000  // Size of array for memory access
+#define ARRAY_SIZE 100000000  // Size of array for memory access
 
-void memory_access(long ARRAY_SIZE) {
+void memory_access() {
     int *array = (int *)malloc(ARRAY_SIZE * sizeof(int));
     if (array == NULL) {
         printf("Failed to allocate memory.\n");
@@ -18,5 +18,5 @@ void memory_access(long ARRAY_SIZE) {
     }
 
     free(array);
-    printf("Memory access test completed for array size %d with sum %lld.\n", ARRAY_SIZE, sum);
+//    printf("Memory access test completed for array size %d with sum %lld.\n", ARRAY_SIZE, sum);
 }

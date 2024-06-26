@@ -1,7 +1,7 @@
 
 #include "benchmark.h"
 
-
+#define N 50
 long _factorial(int n) {
     if (n <= 1) return 1;
     return n * _factorial(n - 1);
@@ -9,9 +9,9 @@ long _factorial(int n) {
 }
 
 
-void factorial(int n){
+void factorial(){
 
-    printf("Factorial completed -->%ldd.\n", _factorial(n));
+//    printf("Factorial completed -->%ldd.\n", _factorial(N));
 
 }
 

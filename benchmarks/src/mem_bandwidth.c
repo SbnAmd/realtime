@@ -2,9 +2,9 @@
 #include "benchmark.h"
 
 
-//#define ARRAY_SIZE 10000000  // Size of arrays for memory copy
+#define ARRAY_SIZE 10000000  // Size of arrays for memory copy
 
-void memory_bandwidth(long ARRAY_SIZE) {
+void memory_bandwidth() {
     double *src = (double *)malloc(ARRAY_SIZE * sizeof(double));
     double *dst = (double *)malloc(ARRAY_SIZE * sizeof(double));
 
@@ -18,6 +18,6 @@ void memory_bandwidth(long ARRAY_SIZE) {
 
     free(src);
     free(dst);
-    printf("Memory bandwidth test completed for array size %d.\n", ARRAY_SIZE);
+//    printf("Memory bandwidth test completed for array size %d.\n", ARRAY_SIZE);
 }
 

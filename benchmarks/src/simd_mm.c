@@ -2,7 +2,7 @@
 #include "benchmark.h"
 
 
-//#define N 512  // Size of the matrix
+#define N 512  // Size of the matrix
 
 void avx_matrix_multiplication(float *A, float *B, float *C, int n) {
     for (int i = 0; i < n; ++i) {
@@ -20,7 +20,7 @@ void avx_matrix_multiplication(float *A, float *B, float *C, int n) {
     }
 }
 
-void simd_mm(long N) {
+void simd_mm() {
     float *A = (float *)_mm_malloc(N * N * sizeof(float), 32);
     float *B = (float *)_mm_malloc(N * N * sizeof(float), 32);
     float *C = (float *)_mm_malloc(N * N * sizeof(float), 32);
@@ -35,7 +35,7 @@ void simd_mm(long N) {
     // Perform SIMD matrix multiplication
     avx_matrix_multiplication(A, B, C, N);
 
-    printf("AVX matrix multiplication completed.\n");
+//    printf("AVX matrix multiplication completed.\n");
 
     _mm_free(A);
     _mm_free(B);

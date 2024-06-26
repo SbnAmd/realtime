@@ -1,7 +1,7 @@
 
 #include "benchmark.h"
 
-//#define SIZE 1000  // Size of the matrices
+#define SIZE 1000  // Size of the matrices
 
 void matrix_multiply(double **A, double **B, double **C, int size) {
     for (int i = 0; i < size; i++) {
@@ -14,7 +14,7 @@ void matrix_multiply(double **A, double **B, double **C, int size) {
     }
 }
 
-void mm(long SIZE) {
+void mm() {
     // Allocate memory for matrices
     double **A = (double **)malloc(SIZE * sizeof(double *));
     double **B = (double **)malloc(SIZE * sizeof(double *));
@@ -46,6 +46,6 @@ void mm(long SIZE) {
     free(B);
     free(C);
 
-    printf("Matrix multiplication completed for size %d.\n", SIZE);
+//    printf("Matrix multiplication completed for size %d.\n", SIZE);
 
 }

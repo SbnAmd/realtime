@@ -2,7 +2,7 @@
 #include "benchmark.h"
 
 
-//#define SIZE 1000  // Size of the matrix
+#define SIZE 1000  // Size of the matrix
 
 void transpose_matrix(double **A, double **transpose, int size) {
     for (int i = 0; i < size; i++) {
@@ -12,7 +12,7 @@ void transpose_matrix(double **A, double **transpose, int size) {
     }
 }
 
-void m_transpose(long SIZE) {
+void m_transpose() {
     double **A = (double **)malloc(SIZE * sizeof(double *));
     double **transpose = (double **)malloc(SIZE * sizeof(double *));
     for (int i = 0; i < SIZE; i++) {
@@ -38,6 +38,6 @@ void m_transpose(long SIZE) {
     free(A);
     free(transpose);
 
-    printf("Matrix transposition completed for size %d.\n", SIZE);
+//    printf("Matrix transposition completed for size %d.\n", SIZE);
 
 }

@@ -2,9 +2,9 @@
 #include "benchmark.h"
 
 
-//#define ARRAY_SIZE 10000000  // Size of array for cache test
+#define ARRAY_SIZE 10000000  // Size of array for cache test
 
-void cache_miss(long ARRAY_SIZE) {
+void cache_miss() {
     int *array = (int *)malloc(ARRAY_SIZE * sizeof(int));
     if (array == NULL) {
         printf("Failed to allocate memory.\n");
@@ -17,5 +17,5 @@ void cache_miss(long ARRAY_SIZE) {
     }
 
     free(array);
-    printf("Cache miss test completed for array size %d.\n", ARRAY_SIZE);
+//    printf("Cache miss test completed for array size %d.\n", ARRAY_SIZE);
 }

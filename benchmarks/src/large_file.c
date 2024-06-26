@@ -3,9 +3,9 @@
 
 
 
-//#define FILE_SIZE 100000000  // Size of the file in bytes
+#define FILE_SIZE 100000000  // Size of the file in bytes
 
-void file_io_benchmark(long FILE_SIZE) {
+void file_io_benchmark() {
     FILE *file;
     char *buffer = (char *)malloc(FILE_SIZE);
 
@@ -28,5 +28,5 @@ void file_io_benchmark(long FILE_SIZE) {
     fclose(file);
 
     free(buffer);
-    printf("File I/O benchmark completed for file size %d.\n", FILE_SIZE);
+//    printf("File I/O benchmark completed for file size %d.\n", FILE_SIZE);
 }

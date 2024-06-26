@@ -2,7 +2,7 @@
 #include "benchmark.h"
 
 
-//#define SIZE 1000  // Size of the matrix
+#define SIZE 1000  // Size of the matrix
 
 void invert_matrix(double **A, double **inverse, int size) {
     // Initialize the identity matrix
@@ -31,7 +31,7 @@ void invert_matrix(double **A, double **inverse, int size) {
     }
 }
 
-void m_inverse(long SIZE) {
+void m_inverse() {
     double **A = (double **)malloc(SIZE * sizeof(double *));
     double **inverse = (double **)malloc(SIZE * sizeof(double *));
     for (int i = 0; i < SIZE; i++) {
@@ -57,6 +57,6 @@ void m_inverse(long SIZE) {
     free(A);
     free(inverse);
 
-    printf("Matrix inversion completed for size %d.\n", SIZE);
+//    printf("Matrix inversion completed for size %d.\n", SIZE);
 
 }

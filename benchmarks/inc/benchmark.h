@@ -25,28 +25,28 @@
 
 
 
-void calculate_primes(long limit);
-void mm(long SIZE);
-void fibonacci(int n);
-void factorial(int n);
-void quick_sort(long ARRAY_SIZE);
-void m_inverse(long SIZE);
-void pi(long NUM_POINTS);
-void rle(long INPUT_SIZE);
-void ackermann(int m, int n);
-void m_transpose(long SIZE);
-void memory_bandwidth(long ARRAY_SIZE);
-void memory_stress(long BLOCK_SIZE);
-void memory_access(long ARRAY_SIZE);
-void memory_fill(long ARRAY_SIZE);
-void cache_miss(long ARRAY_SIZE);
-void file_io_benchmark(long FILE_SIZE);
-void memory_alignment_test(long ARRAY_SIZE);
+void calculate_primes();
+void mm();
+void fibonacci();
+void factorial();
+void quick_sort();
+void m_inverse();
+void pi();
+void rle();
+void ackermann();
+void m_transpose();
+void memory_bandwidth();
+void memory_stress();
+void memory_access();
+void memory_fill();
+void cache_miss();
+void file_io_benchmark();
+void memory_alignment_test();
 
-void simd_vec_add(long VECTOR_SIZE);
-void simd_mm(long N);
-void simd_dot(long VECTOR_SIZE);
-void simd_sse(long WIDTH, long HEIGHT);
+void simd_vec_add();
+void simd_mm();
+void simd_dot();
+void simd_sse();
 
 
 
