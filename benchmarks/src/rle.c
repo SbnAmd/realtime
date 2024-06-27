@@ -1,7 +1,7 @@
 
 #include "benchmark.h"
 
-#define INPUT_SIZE 100000
+#define INPUT_SIZE 50000
 
 void run_length_encoding(const char *input, char *output) {
     int count = 1;

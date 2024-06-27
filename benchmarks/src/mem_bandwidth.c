@@ -2,7 +2,7 @@
 #include "benchmark.h"
 
 
-#define ARRAY_SIZE 10000000  // Size of arrays for memory copy
+#define ARRAY_SIZE 5000000  // Size of arrays for memory copy
 
 void memory_bandwidth() {
     double *src = (double *)malloc(ARRAY_SIZE * sizeof(double));

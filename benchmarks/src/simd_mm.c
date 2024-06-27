@@ -2,7 +2,7 @@
 #include "benchmark.h"
 
 
-#define N 512  // Size of the matrix
+#define N 256  // Size of the matrix
 
 void avx_matrix_multiplication(float *A, float *B, float *C, int n) {
     for (int i = 0; i < n; ++i) {
