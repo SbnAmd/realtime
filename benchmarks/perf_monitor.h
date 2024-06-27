@@ -13,5 +13,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <asm/unistd.h>
+#include <signal.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+
+void get_perf_event(int core, long wait);
 
 #endif //REALTIME_PERF_MONITOR_H

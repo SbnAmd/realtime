@@ -2,7 +2,7 @@
 #include "benchmark.h"
 
 
-#define SIZE 1000  // Size of the matrix
+#define SIZE 300  // Size of the matrix
 
 void invert_matrix(double **A, double **inverse, int size) {
     // Initialize the identity matrix

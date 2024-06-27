@@ -1,7 +1,7 @@
 
 #include "benchmark.h"
 
-#define SIZE 1000  // Size of the matrices
+#define SIZE 300  // Size of the matrices
 
 void matrix_multiply(double **A, double **B, double **C, int size) {
     for (int i = 0; i < size; i++) {

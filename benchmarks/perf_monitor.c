@@ -118,63 +118,63 @@ void get_perf_event(int core, long wait){
     cpu_migrations_pe.exclude_hv = 1;
 
     // CPU CYCLES
-    cpu_cycles_fd = perf_event_open(&cpu_cycles_pe, 0, core, -1, 0);
+    cpu_cycles_fd = perf_event_open(&cpu_cycles_pe, -1, core, -1, 0);
     if (cpu_cycles_fd == -1) {
         fprintf(stderr, "Error opening cpu_cycles_pe counter\n");
         exit(EXIT_FAILURE);
     }
 
     // CPU INSTRUCTIONS
-    cpu_instructions_fd = perf_event_open(&cpu_instructions_pe, 0, core, -1, 0);
+    cpu_instructions_fd = perf_event_open(&cpu_instructions_pe, -1, core, -1, 0);
     if (cpu_instructions_fd == -1) {
         fprintf(stderr, "Error opening cpu_cycles_pe counter\n");
         exit(EXIT_FAILURE);
     }
 
     // CPU CACHE MISSES
-    cpu_cache_misses_fd = perf_event_open(&cpu_cache_misses_pe, 0, core, -1, 0);
+    cpu_cache_misses_fd = perf_event_open(&cpu_cache_misses_pe, -1, core, -1, 0);
     if (cpu_cache_misses_fd == -1) {
         fprintf(stderr, "Error opening cpu_cycles_pe counter\n");
         exit(EXIT_FAILURE);
     }
 
     // CPU CACHE REFERENCES
-    cpu_cache_references_fd = perf_event_open(&cpu_cache_references_pe, 0, core, -1, 0);
+    cpu_cache_references_fd = perf_event_open(&cpu_cache_references_pe, -1, core, -1, 0);
     if (cpu_cache_references_fd == -1) {
         fprintf(stderr, "Error opening cpu_cycles_pe counter\n");
         exit(EXIT_FAILURE);
     }
 
     // CPU BRANCH MISSES
-    cpu_branch_misses_fd = perf_event_open(&cpu_branch_misses_pe, 0, core, -1, 0);
+    cpu_branch_misses_fd = perf_event_open(&cpu_branch_misses_pe, -1, core, -1, 0);
     if (cpu_branch_misses_fd == -1) {
         fprintf(stderr, "Error opening cpu_cycles_pe counter\n");
         exit(EXIT_FAILURE);
     }
 
     // CPU BRANCH INSTRUCTION
-    cpu_branch_instructions_fd = perf_event_open(&cpu_branch_instructions_pe, 0, core, -1, 0);
+    cpu_branch_instructions_fd = perf_event_open(&cpu_branch_instructions_pe, -1, core, -1, 0);
     if (cpu_branch_instructions_fd == -1) {
         fprintf(stderr, "Error opening cpu_cycles_pe counter\n");
         exit(EXIT_FAILURE);
     }
 
     // CPU PAGE FAULTS
-    cpu_page_faults_fd = perf_event_open(&cpu_page_faults_pe, 0, core, -1, 0);
+    cpu_page_faults_fd = perf_event_open(&cpu_page_faults_pe, -1, core, -1, 0);
     if (cpu_page_faults_fd == -1) {
         fprintf(stderr, "Error opening cpu_cycles_pe counter\n");
         exit(EXIT_FAILURE);
     }
 
     // CPU CONTEXT SWITCHES
-    cpu_context_switches_fd = perf_event_open(&cpu_context_switches_pe, 0, core, -1, 0);
+    cpu_context_switches_fd = perf_event_open(&cpu_context_switches_pe, -1, core, -1, 0);
     if (cpu_context_switches_fd == -1) {
         fprintf(stderr, "Error opening cpu_cycles_pe counter\n");
         exit(EXIT_FAILURE);
     }
 
     // CPU MIGRATIONS
-    cpu_migrations_fd = perf_event_open(&cpu_migrations_pe, 0, core, -1, 0);
+    cpu_migrations_fd = perf_event_open(&cpu_migrations_pe, -1, core, -1, 0);
     if (cpu_migrations_fd == -1) {
         fprintf(stderr, "Error opening cpu_cycles_pe counter\n");
         exit(EXIT_FAILURE);

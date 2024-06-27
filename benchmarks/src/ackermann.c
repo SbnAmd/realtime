@@ -12,7 +12,9 @@ int _ackermann(int m, int n) {
 }
 
 void ackermann() {
-    int m = 3, n = 6;  // Adjust parameters for more intensive computation
-//    printf("Ackermann(%d, %d) = %d\n", m, n, _ackermann(m, n));
+    for(int i = 0 ; i < 20;i++){
+        int m = 3, n = 6;  // Adjust parameters for more intensive computation
+        _ackermann(m, n);
+    }
 
 }

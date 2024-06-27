@@ -1,4 +1,5 @@
 #include "benchmark.h"
+#include "perf_monitor.h"
 
 
 
@@ -29,16 +30,32 @@ void(* tasks[19])() = {
 
 void* thread_function(void* arg) {
     int core_id = *((int*)arg);  // Convert the argument back to an integer
+    struct timespec start, end;
+    struct timespec task_start, task_end;
+    long task_duration_ns, total_ns, elapsed_ns, duration;
+
     SET_CORE(core_id);
     printf("Hello from thread %d\n", core_id);
     while (1){
-        tasks[core_id-6]();
+        for(int i = 0; i < 19; i++){
+
+            clock_gettime(CLOCK_MONOTONIC, &start);
+
+            tasks[i]();
+
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            // Time calc
+            elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
+            duration = elapsed_ns / 1000000;
+            printf("Task %d done within %ld ms\n", i, duration);
+        }
+
     }
 }
 
 
 int main(){
-    int num_threads = 4;
+    int num_threads = 1;
     pthread_t threads[num_threads];
     int thread_ids[num_threads];
 
@@ -50,7 +67,8 @@ int main(){
             return 1;
         }
     }
-
+//    while (1)
+//        get_perf_event(15, 100000);
     // Wait for all threads to complete
     for (int i = 0; i < num_threads; i++) {
         pthread_join(threads[i], NULL);
