@@ -41,24 +41,24 @@ void de_init(const char *fifo_tx,const char *fifo_rx, int* tx_fd, int* rx_fd){
     unlink(fifo_rx); // Remove FIFO file
 }
 
-inline void serialize(char* buf, long duration){
+void serialize(char* buf, long duration){
     sprintf(buf, "%ld", duration);
 }
 
 
-inline long time_task(int task_id){
+long time_task(int task_id){
     struct timespec task_start, task_end;
     long elapsed_ns;
     clock_gettime(CLOCK_MONOTONIC, &task_start);
 
     tasks[task_id]();
 
-    clock_gettime(CLOCK_MONOTONIC, &task_start);
+    clock_gettime(CLOCK_MONOTONIC, &task_end);
     elapsed_ns = (task_end.tv_sec - task_start.tv_sec) * 1000000000 + (task_end.tv_nsec - task_start.tv_nsec);
     return elapsed_ns/1000000;
 }
 
-inline int receive(char* buff, int* rx_fd){
+int receive(char* buff, int* rx_fd){
     ssize_t bytes_read = 0;
 
     while (bytes_read < 16){
@@ -69,7 +69,7 @@ inline int receive(char* buff, int* rx_fd){
     return (a - 48)*10 + (b - 48);
 }
 
-inline void send(char* buf,int* tx_fd){
+void send(char* buf,int* tx_fd){
 
     size_t length = strlen(buf);
     write(*tx_fd, &length, sizeof(length));
@@ -86,6 +86,8 @@ void* ex_worker(void* arg) {
     char send_buff[16] = {'\0'};
     int task_id = 0;
     long duration = 0;
+
+    SET_CORE(core_idx+CORE_OFFSET);
 
     init(fifo_tx, fifo_rx, &tx_fd, &rx_fd);
 

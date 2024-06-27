@@ -1,8 +1,5 @@
-import subprocess
 from Python.Class.cpu import CPU
-from old_Python.Class.globals import *
-from compare import compare_result
-import os
+from Python.Class.globals import *
 
 binary_path = './cmake-build-debug/realtime'
 

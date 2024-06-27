@@ -8,6 +8,7 @@
 #include "conf.h"
 
 void* ex_worker(void* arg);
+//inline int receive(char* buff, int* rx_fd);
 
 
 #endif //REALTIME_THREAD_H

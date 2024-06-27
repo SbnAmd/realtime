@@ -17,7 +17,7 @@ class CPU:
     energy_path = "/sys/class/powercap/intel-rapl:0/intel-rapl:0:0/energy_uj"
     freq_path_prefix = "/sys/devices/system/cpu/cpu"
 
-    def __init__(self, core_count, _tasks, scheduler_idx=0):
+    def __init__(self, core_count, _tasks, scheduler_idx=0, drop=None):
         self.core_count = core_count
         self.clock = Tick(0.01)
         self.cores = {f'core{i}': Core(i, self.clock) for i in range(core_count)}
@@ -31,6 +31,7 @@ class CPU:
         elif scheduler_idx == 2:
             self.scheduler = SelectiveScheduler(self.tasks, self)
 
+        self.drop = drop
         self.power_timeline = bytearray()
         self.temperature_timeline = [bytearray(), bytearray(), bytearray(), bytearray()]
 
@@ -86,10 +87,10 @@ class CPU:
             task.reset_missed_deadlines()
         return cnt
 
-    def schedule(self, drop=2):
+    def schedule(self):
         self.get_power()
         self.get_temperature()
-        self.scheduler.schedule(n=drop)
+        self.scheduler.schedule(n=self.drop)
 
     def print_core_status(self):
         for _, core in self.cores.items():

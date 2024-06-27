@@ -14,13 +14,7 @@
 #include <xmmintrin.h>  // Header for SSE intrinsics
 #include <immintrin.h>  // Header for AVX intrinsics
 
-#define SET_CORE(core_id) \
-    do { \
-        cpu_set_t cpuset; \
-        CPU_ZERO(&cpuset); \
-        CPU_SET(core_id, &cpuset); \
-        pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset); \
-    } while (0)
+
 
 
 

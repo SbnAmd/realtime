@@ -10,7 +10,13 @@ int main(){
     int core_id[NUM_CORES]={0, 1, 2, 3};
 
     for(int i = 0; i < NUM_CORES; i++){
-        int result = pthread_create(&ex_thread[i], NULL, ex_worker, (void*)&core_id[i]);
+        params.sched_priority = sched_get_priority_max(SCHED_FIFO);
+        pthread_attr_init(&ex_attrs[i]);
+        pthread_attr_setinheritsched(&ex_attrs[i], PTHREAD_EXPLICIT_SCHED);
+        pthread_attr_setschedpolicy(&ex_attrs[i], SCHED_FIFO);
+        pthread_attr_setschedparam(&ex_attrs[i], &params);
+
+        int result = pthread_create(&ex_thread[i], &ex_attrs[i], ex_worker, (void*)&core_id[i]);
         if (result != 0) {
             printf("Error creating thread %d: %s\n", i, strerror(result));
             return 1;
