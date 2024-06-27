@@ -1,5 +1,6 @@
 #include "benchmark.h"
 #include "perf_monitor/perf_monitor.h"
+#include "conf.h"
 
 
 
@@ -27,6 +28,8 @@ void(* tasks[19])() = {
         simd_vec_add                // 70 C
 };
 
+
+#ifdef BENCH_TEST
 void perf_to_str(char* buf, long* ptr){
     /* name, core, cycles, instructions, cahce_misses, cache_refs, branch_misses, branch_instructions, page_faults, contexts, migrations, duration, energy, temp*/
     sprintf(buf, "%ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld\n",
@@ -109,7 +112,6 @@ int main(){
     for (int i = 0; i < num_threads; i++) {
         pthread_join(threads[i], NULL);
     }
-
-
     return 0;
 }
+#endif
