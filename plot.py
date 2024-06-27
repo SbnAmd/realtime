@@ -2,9 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-two_drop_data = np.loadtxt("scheduling_2d.txt")
-one_drop_data = np.loadtxt("scheduling_1d.txt")
-no_drop_data = np.loadtxt("scheduling.txt")
+two_drop_data = np.loadtxt("scheduling_4g.txt")
+one_drop_data = np.loadtxt("scheduling_3g.txt")
+no_drop_data = np.loadtxt("scheduling_2g.txt")
 
 two_temp_avg = np.mean(two_drop_data[:, 1:], axis=1)
 one_temp_avg = np.mean(one_drop_data[:, 1:], axis=1)

@@ -62,6 +62,8 @@ int receive(char* buff, int* rx_fd){
     ssize_t bytes_read = 0;
 
     while (bytes_read < 16){
+        if(bytes_read == 0)
+            usleep(300);
         bytes_read += read(*rx_fd, (void*)buff, 16);
     }
     char a = buff[0];

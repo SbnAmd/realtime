@@ -102,7 +102,7 @@ tasks = [
      },
 
     {'name': "QuickSortTask",
-     'period': 8,
+     'period': 10,
      'execution_time': 2
      },
 
@@ -112,13 +112,13 @@ tasks = [
      },
 
     {'name': "PiTask",
-     'period': 20,
-     'execution_time': 4
+     'period': 60,
+     'execution_time': 20
      },
 
     {'name': "RLETask",
      'period': 48,
-     'execution_time': 17
+     'execution_time': 2
      },
 
     {'name': "AckermannTask",
@@ -127,18 +127,18 @@ tasks = [
      },
 
     {'name': "MatrixTransposeTask",
-     'period': 15,
-     'execution_time': 3
+     'period': 50,
+     'execution_time': 20
      },
 
     {'name': "MemoryAccessTask",
      'period': 60,
-     'execution_time': 12
+     'execution_time': 4
      },
 
     {'name': "MemoryBandwidthTask",
      'period': 99,
-     'execution_time': 11
+     'execution_time': 4
      },
 
     {'name': "MemoryStressTask",
@@ -153,7 +153,7 @@ tasks = [
 
     {'name': "FileIOTask",
      'period': 90,
-     'execution_time': 9
+     'execution_time': 2
      },
 
     {'name': "PrimeNumberTask",
@@ -173,7 +173,7 @@ tasks = [
 
     {'name': "SIMDMatrixMultiplyTask",
      'period': 56,
-     'execution_time': 14
+     'execution_time': 2
      },
 
     {'name': "SIMDSSETask",

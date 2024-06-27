@@ -3,7 +3,7 @@
 
 
 
-#define FILE_SIZE 40000000  // Size of the file in bytes
+#define FILE_SIZE 10000000  // Size of the file in bytes
 
 void file_io_benchmark() {
     FILE *file;

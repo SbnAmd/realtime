@@ -1,7 +1,7 @@
 
 #include "benchmark.h"
 
-#define ARRAY_SIZE 20000000  // Size of array for memory access
+#define ARRAY_SIZE 1000000  // Size of array for memory access
 
 void memory_access() {
     int *array = (int *)malloc(ARRAY_SIZE * sizeof(int));

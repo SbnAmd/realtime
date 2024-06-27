@@ -200,4 +200,4 @@ class CPU:
         combined_list = list(zip(self.power_timeline, self.temperature_timeline[0], self.temperature_timeline[1],
                                  self.temperature_timeline[2], self.temperature_timeline[3], ))
         numpy_array = np.array(combined_list)
-        np.savetxt("scheduling_2d.txt", numpy_array)
+        np.savetxt("scheduling_2g.txt", numpy_array)
