@@ -1,7 +1,7 @@
 
 #include "benchmark.h"
 
-#define NUM_POINTS 10000000
+#define NUM_POINTS 1000000
 
 double calculate_pi() {
     int inside_circle = 0;

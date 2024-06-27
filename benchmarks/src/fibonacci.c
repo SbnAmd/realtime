@@ -18,7 +18,7 @@ long long _fibonacci(long n) {
 
 
 void fibonacci() {
-    for(int i = 0 ; i < 30000; i++){
+    for(int i = 0 ; i < 32000; i++){
         _fibonacci(N);
 //        printf("Fibo %ld\n", p);
     }

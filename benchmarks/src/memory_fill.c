@@ -2,7 +2,7 @@
 #include "benchmark.h"
 
 
-#define ARRAY_SIZE 100000000  // Size of array for memory fill
+#define ARRAY_SIZE 10000000  // Size of array for memory fill
 
 void memory_fill() {
     int *array = (int *)malloc(ARRAY_SIZE * sizeof(int));

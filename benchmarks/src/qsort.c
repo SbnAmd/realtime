@@ -1,7 +1,7 @@
 
 #include "benchmark.h"
 
-#define ARRAY_SIZE 1000000  // Array size for sorting
+#define ARRAY_SIZE 100000  // Array size for sorting
 
 void quicksort(int *array, int low, long high) {
     if (low < high) {

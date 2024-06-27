@@ -1,5 +1,5 @@
 #include "benchmark.h"
-#include "perf_monitor.h"
+#include "perf_monitor/perf_monitor.h"
 
 
 
@@ -27,16 +27,49 @@ void(* tasks[19])() = {
         simd_vec_add                // 70 C
 };
 
+void perf_to_str(char* buf, long* ptr){
+    /* name, core, cycles, instructions, cahce_misses, cache_refs, branch_misses, branch_instructions, page_faults, contexts, migrations, duration, energy, temp*/
+    sprintf(buf, "%ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld, %ld\n",
+            ptr[0],
+            ptr[1],
+            ptr[2],
+            ptr[3],
+            ptr[4],
+            ptr[5],
+            ptr[6],
+            ptr[7],
+            ptr[8],
+            ptr[9],
+            ptr[10],
+            ptr[11],
+            ptr[12],
+            ptr[13],
+            ptr[14],
+            ptr[15],
+            ptr[16],
+            ptr[17],
+            ptr[18]
+    );
+}
+
 
 void* thread_function(void* arg) {
     int core_id = *((int*)arg);  // Convert the argument back to an integer
     struct timespec start, end;
-    struct timespec task_start, task_end;
-    long task_duration_ns, total_ns, elapsed_ns, duration;
+    long elapsed_ns, duration;
+    long task_duration[19];
+    char buf[256];
+    FILE* fp;
+
+    // Open the file for reading
+    fp = fopen("times.txt", "w");
+    if (fp == NULL) {
+        perror("Error opening file");
+    }
 
     SET_CORE(core_id);
     printf("Hello from thread %d\n", core_id);
-    while (1){
+    for(int j=0; j < 10; j++){
         for(int i = 0; i < 19; i++){
 
             clock_gettime(CLOCK_MONOTONIC, &start);
@@ -46,11 +79,14 @@ void* thread_function(void* arg) {
             clock_gettime(CLOCK_MONOTONIC, &end);
             // Time calc
             elapsed_ns = (end.tv_sec - start.tv_sec) * 1000000000 + (end.tv_nsec - start.tv_nsec);
-            duration = elapsed_ns / 1000000;
-            printf("Task %d done within %ld ms\n", i, duration);
+            task_duration[i] = elapsed_ns / 1000000;
         }
-
+        perf_to_str(buf, task_duration);
+//        printf("%s\n", buf);
+        fputs(buf, fp);
     }
+
+    fclose(fp);
 }
 
 
