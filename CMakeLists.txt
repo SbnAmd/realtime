@@ -41,7 +41,7 @@ add_executable(realtime
 #        C/threads/realtime_t.c
 #        C/threads/manager.h
 #        C/threads/manager.c
-        main.c
+        C/main.c
         C/function_types/function_types.h
 #        Test/perf_count.h
 #        Test/perf_count.c
@@ -75,7 +75,7 @@ add_executable(realtime
         C/tasks/sniptype.h
         C/threads/temperature.c
         C/threads/temperature.h
-        thread.c
+        C/thread.c
 )
 add_link_options("-pthread")
 target_link_libraries(realtime PRIVATE m sensors cjson)
